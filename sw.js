@@ -1,5 +1,5 @@
 // どうぶつリズムパーティー: offline cache (version changes on every build)
-const CACHE = 'dobutsu-e01c8612df';
+const CACHE = 'dobutsu-f9326eb187';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

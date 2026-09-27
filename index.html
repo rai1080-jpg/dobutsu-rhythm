@@ -538,10 +538,11 @@ function parseMelody(str) {
 
 const CHORDS = {
   C:  { root:48, tri:[60, 64, 67] }, F:  { root:53, tri:[60, 65, 69] }, G:  { root:55, tri:[59, 62, 67] },
-  Am: { root:57, tri:[60, 64, 69] }, Dm: { root:50, tri:[62, 65, 69] }, Em: { root:52, tri:[59, 64, 67] }, E:  { root:52, tri:[59, 64, 68] },
+  Am: { root:57, tri:[60, 64, 69] }, Dm: { root:50, tri:[62, 65, 69] }, Em: { root:52, tri:[59, 64, 67] }, E:  { root:52, tri:[59, 64, 68] }, D:  { root:50, tri:[62, 66, 69] },
 };
 
 const twice = s => s + '  ' + s;
+const twice2 = a => a.concat(a);
 const SONGS = [
   {
     id:'kira', name:'きらきらぼし', level:1, levelName:'かんたん', bpm:96, approach:1.9, animal:0, sky:['#a8dcff', '#ffe9f4'],
@@ -625,6 +626,61 @@ const SONGS = [
       'A4:4',
     ].join('  '),
   },
+  /* ---- more public-domain tunes (traditional folk songs / composers who died long ago) ---- */
+  {
+    id:'kaeru', name:'かえるのうた', level:1, levelName:'かんたん', bpm:100, approach:1.8, animal:2, sky:['#c8f2d8', '#fff4d6'],
+    chords:twice2(['C', 'C G', 'C', 'C G', 'C', 'C', 'C F', 'G C']),
+    style:{ k:[1,0,0,0,1,0,0,0], s:[0,0,1,0,0,0,1,0], h:[0,1,0,1,0,1,0,1], b:[0,null,null,null,7,null,null,null], c:[0,0,1,0,0,0,1,0] },
+    melody:twice([
+      'C4:1 D4:1 E4:1 F4:1  E4:1 D4:1 C4:2  E4:1 F4:1 G4:1 A4:1  G4:1 F4:1 E4:2',
+      'C4:1 r:1 C4:1 r:1  C4:1 r:1 C4:1 r:1  C4:.5 C4:.5 D4:.5 D4:.5 E4:.5 E4:.5 F4:.5 F4:.5  E4:1 D4:1 C4:2',
+    ].join('  ')),
+  },
+  {
+    id:'farm', name:'ゆかいな まきば', level:1, levelName:'かんたん', bpm:112, approach:1.8, animal:0, sky:['#d2f0c4', '#fff1d0'],
+    chords:['C', 'F C', 'C G', 'C', 'C', 'F C', 'C G', 'C', 'C', 'C', 'C', 'C', 'C', 'F C', 'C G', 'C'],
+    style:{ k:[1,0,0,0,1,0,0,0], s:[0,0,1,0,0,0,1,0], h:[1,0,1,0,1,0,1,0], b:[0,null,7,null,0,null,7,null], c:[0,1,0,1,0,1,0,1] },
+    melody:[
+      'C5:1 C5:1 C5:1 G4:1  A4:1 A4:1 G4:2  E5:1 E5:1 D5:1 D5:1  C5:3 G4:1',
+      'C5:1 C5:1 C5:1 G4:1  A4:1 A4:1 G4:2  E5:1 E5:1 D5:1 D5:1  C5:3 G4:.5 G4:.5',
+      'C5:1 C5:1 C5:2  G4:.5 G4:.5 C5:1 C5:2  C5:.5 C5:.5 C5:1 C5:.5 C5:.5 C5:1  C5:.5 C5:.5 C5:.5 C5:.5 C5:1 C5:1',
+      'C5:1 C5:1 C5:1 G4:1  A4:1 A4:1 G4:2  E5:1 E5:1 D5:1 D5:1  C5:4',
+    ].join('  '),
+  },
+  {
+    id:'gcp', name:'グーチョキパー', level:2, levelName:'ふつう', bpm:112, approach:1.6, animal:3, sky:['#ffe1ec', '#fff6c9'],
+    chords:twice2(['C', 'C', 'C', 'C', 'C', 'C', 'C G', 'C G']),
+    style:{ k:[1,0,0,0,1,0,0,0], s:[0,0,1,0,0,0,1,0], h:[1,1,1,1,1,1,1,1], b:[0,null,12,null,7,null,12,null], c:[0,1,0,1,0,1,0,1] },
+    melody:twice([
+      'C4:1 D4:1 E4:1 C4:1  C4:1 D4:1 E4:1 C4:1  E4:1 F4:1 G4:2  E4:1 F4:1 G4:2',
+      'G4:.5 A4:.5 G4:.5 F4:.5 E4:1 C4:1  G4:.5 A4:.5 G4:.5 F4:.5 E4:1 C4:1  C4:1 G3:1 C4:2  C4:1 G3:1 C4:2',
+    ].join('  ')),
+  },
+  {
+    id:'alps', name:'アルプス いちまんじゃく', level:2, levelName:'ふつう', bpm:120, approach:1.6, animal:1, sky:['#cfeaff', '#eaffe4'],
+    chords:['C G', 'C G', 'C F', 'G C', 'C G', 'C G', 'C F', 'G C', 'C G', 'C G', 'C F', 'G C'],
+    style:{ k:[1,0,1,0,1,0,1,0], s:[0,0,1,0,0,0,1,0], h:[1,1,1,1,1,1,1,1], b:[0,null,7,null,0,null,7,null], c:[0,1,0,1,0,1,0,1] },
+    melody:[1, 2, 3].map(() =>
+      'C4:.5 C4:.5 D4:.5 E4:.5 C4:.5 E4:.5 D4:.5 G3:.5  C4:.5 C4:.5 D4:.5 E4:.5 C4:1 B3:1  C4:.5 C4:.5 D4:.5 E4:.5 F4:.5 E4:.5 D4:.5 C4:.5  B3:.5 G3:.5 A3:.5 B3:.5 C4:1 C4:1'
+    ).join('  '),
+  },
+  {
+    id:'birthday', name:'ハッピーバースデー', level:2, levelName:'ふつう', bpm:108, bpb:3, approach:1.6, animal:0, sky:['#ffe0ef', '#fff4c4'],
+    chords:twice2(['C', 'C', 'G', 'G', 'C', 'C', 'F', 'C G', 'C']),
+    style:{ k:[1,0,0,0,0,0], s:[0,0,1,0,1,0], h:[0,1,0,1,0,1], b:[0,null,null,null,null,null], c:[0,0,1,0,1,0] },
+    melody:twice('r:2 G4:.5 G4:.5  A4:1 G4:1 C5:1  B4:2 G4:.5 G4:.5  A4:1 G4:1 D5:1  C5:2 G4:.5 G4:.5  G5:1 E5:1 C5:1  B4:1 A4:1 F5:.5 F5:.5  E5:1 C5:1 D5:1  C5:3'),
+  },
+  {
+    id:'minuet', name:'メヌエット', level:3, levelName:'むずかしい', bpm:126, bpb:3, approach:1.5, animal:3, sky:['#e0d9ff', '#fff0f6'],
+    chords:['G', 'G', 'C', 'G', 'C', 'G', 'D', 'D', 'G', 'G', 'C', 'G', 'C', 'G', 'D', 'G'],
+    style:{ k:[1,0,0,0,0,0], s:[0,0,1,0,1,0], h:[1,1,1,1,1,1], b:[0,null,7,null,12,null], c:[0,0,1,0,1,0] },
+    melody:[
+      'D5:1 G4:.5 A4:.5 B4:.5 C5:.5  D5:1 G4:1 G4:1  E5:1 C5:.5 D5:.5 E5:.5 F#5:.5  G5:1 G4:1 G4:1',
+      'C5:1 D5:.5 C5:.5 B4:.5 A4:.5  B4:1 C5:.5 B4:.5 A4:.5 G4:.5  F#4:1 G4:.5 A4:.5 B4:.5 G4:.5  A4:3',
+      'D5:1 G4:.5 A4:.5 B4:.5 C5:.5  D5:1 G4:1 G4:1  E5:1 C5:.5 D5:.5 E5:.5 F#5:.5  G5:1 G4:1 G4:1',
+      'C5:1 D5:.5 C5:.5 B4:.5 A4:.5  B4:1 C5:.5 B4:.5 A4:.5 G4:.5  A4:1 B4:.5 A4:.5 G4:.5 F#4:.5  G4:3',
+    ].join('  '),
+  },
 ];
 SONGS.sort((a, b) => a.level - b.level);   // easy → hard (stable)
 
@@ -652,7 +708,8 @@ for (const s of SONGS) {
   }
   s.melBeats = mel.total;
   s.introBeats = 4;
-  s.melBars = Math.ceil(mel.total / 4);
+  s.bpb = s.bpb || 4;                           // beats per bar (3 = waltz time)
+  s.melBars = Math.ceil(mel.total / s.bpb);
   s.totalBars = 1 + s.melBars + 1;              // count-in + melody + outro
 }
 
@@ -724,25 +781,28 @@ const Sound = {
   /* backing-track scheduler: 8th-note steps, look-ahead */
   startSong(song, t0) {
     this.stopSong();
-    const spb = 60 / song.bpm, step = spb / 2, total = song.totalBars * 8;
+    const spb = 60 / song.bpm, step = spb / 2, bs = song.bpb * 2;       // 8th-note steps; bs = steps per bar
+    const melEnd = 8 + song.melBars * bs, total = melEnd + 8;           // 4-beat count-in + melody + outro
     let i = 0;
     const chordAt = (bar, s) => {
-      const idx = Math.min(Math.max(bar - 1, 0), song.chords.length - 1);
-      const parts = song.chords[bar === song.totalBars - 1 ? song.chords.length - 1 : idx].split(' ');
-      return CHORDS[parts[Math.min(parts.length - 1, Math.floor(s / (8 / parts.length)))]];
+      const parts = song.chords[Math.min(bar, song.chords.length - 1)].split(' ');
+      return CHORDS[parts[Math.min(parts.length - 1, Math.floor(s / (bs / parts.length)))]];
     };
     const play = (n, t) => {
-      const bar = Math.floor(n / 8), s = n % 8, st = song.style;
-      if (bar === 0) {                                   // count-in bar: ticks + soft hats
-        if (s % 2 === 0) this.tick(t, s === 6);
-        else if (s > 3) this.hat(t, .1);
+      const st = song.style;
+      if (n < 8) {                                       // count-in bar: ticks + soft hats
+        if (n % 2 === 0) this.tick(t, n === 6);
+        else if (n > 3) this.hat(t, .1);
         return;
       }
-      const ch = chordAt(bar, s);
-      if (bar === song.totalBars - 1) {                  // outro: one big happy chord
-        if (s === 0) { this.kick(t); this.snare(t); ch.tri.forEach(m => this.pluck(t, m, 1.6, .12)); this.bass(t, ch.root, 1.6); }
+      if (n >= melEnd) {                                 // outro: one big happy chord
+        if (n === melEnd) {
+          const last = song.chords[song.chords.length - 1].split(' '), ch = CHORDS[last[last.length - 1]];
+          this.kick(t); this.snare(t); ch.tri.forEach(m => this.pluck(t, m, 1.6, .12)); this.bass(t, ch.root, 1.6);
+        }
         return;
       }
+      const m = n - 8, s = m % bs, ch = chordAt(Math.floor(m / bs), s);
       if (st.k[s]) this.kick(t);
       if (st.s[s]) this.snare(t);
       if (st.h[s]) this.hat(t, s % 2 ? .14 : .2);
@@ -804,7 +864,11 @@ const totalStars = () => Object.values(store.data.best).reduce((a, b) => a + (b.
 const MAX_STARS = 5;
 const bestKey = (song, hard) => hard ? song.id + '@hard' : song.id;
 const fiveCount = () => SONGS.filter(s => ((store.data.best[s.id] || {}).stars || 0) >= MAX_STARS).length;
-const hardUnlocked = () => fiveCount() >= SONGS.length;
+const HARD_NEED = 8;   // ★5 songs needed; once opened it stays open even when new songs are added
+const hardUnlocked = () => {
+  if (!store.data.hardOpen && fiveCount() >= HARD_NEED) { store.data.hardOpen = true; store.save(); }
+  return !!store.data.hardOpen;
+};
 const isHard = () => store.data.mode === 'hard' && hardUnlocked();
 const outfitNow = () => { const o = OUTFITS[store.data.outfit]; return o && o.need <= totalStars() ? o : OUTFITS[0]; };
 const accNow = () => {   // only items she has actually earned
@@ -869,7 +933,7 @@ function renderSongs() {
     <button class="mode hardm${hard ? ' sel' : ''}${open ? '' : ' lock'}" data-mode="hard" ${open ? '' : 'aria-disabled="true"'}>${open ? '' : '🔒 '}むずかしいモード</button>`;
   $('modeHint').innerHTML = open
     ? (hard ? 'どうぶつが はやく おちてきて、ノーツも ふえるよ！ はんていも きびしめ。' : 'むずかしいモードが あそべるよ！')
-    : `ぜんぶの きょくで ★${MAX_STARS} を とると むずかしいモードが あそべるよ（いま <b>${fiveCount()}</b> / ${SONGS.length} きょく）`;
+    : `${HARD_NEED}きょくで ★${MAX_STARS} を とると むずかしいモードが あそべるよ（いま <b>${fiveCount()}</b> / ${HARD_NEED} きょく）`;
   $('songList').innerHTML = SONGS.map((s, i) => {
     const b = store.data.best[bestKey(s, hard)];
     const cls = ['', 'e', 'n', 'h'][s.level];
@@ -1030,7 +1094,7 @@ function startGame(song) {
   G.lanes = [[], [], [], []]; G.notes.forEach(n => G.lanes[n.lane].push(n));
   G.ptr = [0, 0, 0, 0]; G.score = G.combo = G.maxCombo = G.missRun = G.perfRun = 0;
   G.cnt = { p:0, g:0, o:0, m:0 }; G.parts = []; G.flash = [0, 0, 0, 0]; G.cdBeat = -99;
-  G.endT = (song.introBeats + song.melBars * 4 + 4) * G.spb + 2.2;
+  G.endT = (song.introBeats + song.melBars * song.bpb + 4) * G.spb + 2.2;
   G.t0 = Sound.now() + .7;
   Sound.startSong(song, G.t0);
   const app = $('app');
