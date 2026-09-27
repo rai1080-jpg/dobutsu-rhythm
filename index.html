@@ -107,7 +107,15 @@ button{font-family:inherit}
   background:#fff;color:var(--pink-d);box-shadow:0 3px 0 rgba(91,51,72,.18);cursor:pointer}
 #bgmBtn.off{color:var(--ink-soft);background:#f3eef1}
 #bgmBtn:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
-#title,#select,#wardrobe{padding-top:52px}   /* room for the music button */
+#title,#select,#wardrobe,#save{padding-top:52px}
+.savecard{background:#fff;border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;width:min(480px,100%);box-shadow:0 5px 0 rgba(91,51,72,.12)}
+.savelabel{font-size:14px;color:var(--ink-soft)}
+#saveCode{font-family:var(--display);font-size:clamp(20px,5.6vw,28px);letter-spacing:.06em;line-height:1.6;text-align:center;word-break:break-all;color:var(--pink-d);
+  -webkit-user-select:text;user-select:text}
+#loadCode{width:100%;font-family:var(--body);font-weight:700;font-size:18px;text-align:center;padding:.6em .8em;border-radius:14px;border:3px solid #f0d3e2;color:var(--ink);background:#fff;
+  -webkit-user-select:text;user-select:text;touch-action:manipulation}
+#loadCode:focus-visible{outline:4px solid var(--sky);outline-offset:2px}
+#saveMsg.ok{background:#e3f8ee}#saveMsg.ng{background:#ffe6ec}   /* room for the music button */
 #pauseBtn{pointer-events:auto;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--ink);font-size:16px;font-weight:900;
   box-shadow:0 3px 0 rgba(91,51,72,.2);cursor:pointer;flex:none}
 #prog{flex:1;height:12px;background:rgba(255,255,255,.85);border-radius:999px;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(91,51,72,.08)}
@@ -297,7 +305,7 @@ h2.ttl{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(26px,
     <h1 class="logo"><div class="l1"><span>ど</span><span>う</span><span>ぶ</span><span>つ</span></div><div class="l2">リズムパーティー</div></h1>
     <div id="titleCast"></div>
     <div class="howto">おちてくる <b>どうぶつ</b> が まるにかさなったら <b>タッチ！</b><span class="kbd-only"><br>キーボードは <b>D F J K</b>（やじるしキーでもOK）</span><span class="touch-only"><br><b>ゆび</b>で まるを トン！ たてむきが あそびやすいよ</span></div>
-    <div class="row"><button class="btn" id="btnStart">あそぶ！</button><button class="btn ghost small" id="btnWardrobe1">おきがえ</button></div>
+    <div class="row"><button class="btn" id="btnStart">あそぶ！</button><button class="btn ghost small" id="btnWardrobe1">おきがえ</button><button class="btn ghost small" id="btnSave">きろく</button></div>
   </section>
 
   <section class="screen veil" id="select" hidden>
@@ -313,6 +321,23 @@ h2.ttl{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(26px,
     <div id="starTotal" class="howto"></div>
     <div id="wardrobeGrid"></div>
     <div class="stickyBar"><button class="btn small" id="btnWardrobeBack">できた！</button></div>
+  </section>
+
+  <section class="screen veil" id="save" hidden>
+    <h2 class="ttl">きろくの あいことば</h2>
+    <div class="howto">アプリを けす まえに、この あいことばを メモしてね。<br>あたらしい アプリで いれると、<b>★</b> と <b>ようふく</b> が もどるよ。<br><small>（ハイスコアの てんすうは もどらないよ）</small></div>
+    <div class="savecard">
+      <div class="savelabel">いまの あいことば</div>
+      <div id="saveCode"></div>
+      <button class="btn small sun" id="btnCopy" type="button">コピーする</button>
+    </div>
+    <div class="savecard">
+      <label class="savelabel" for="loadCode">まえの あいことばを いれる</label>
+      <input id="loadCode" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ひらがなで いれてね">
+      <button class="btn small" id="btnLoad" type="button">きろくを もどす</button>
+    </div>
+    <div id="saveMsg" class="howto" role="status" hidden></div>
+    <button class="btn ghost small" id="btnSaveBack" type="button">もどる</button>
   </section>
 
   <section class="screen veil" id="pause" hidden>
@@ -881,8 +906,8 @@ const starText = (n, max = MAX_STARS) => Array.from({ length: max }, (_, i) => `
 /* =====================================================
    Static UI
    ===================================================== */
-const SCREENS = ['title', 'select', 'wardrobe', 'pause', 'result'];
-const MENU_SCREENS = ['title', 'select', 'wardrobe'];
+const SCREENS = ['title', 'select', 'wardrobe', 'save', 'pause', 'result'];
+const MENU_SCREENS = ['title', 'select', 'wardrobe', 'save'];
 let curScreen = 'title';
 const bgmOn = () => store.data.bgm !== false;
 function syncBgm() {
@@ -939,7 +964,7 @@ function renderSongs() {
     const cls = ['', 'e', 'n', 'h'][s.level];
     return `<button class="song" data-i="${i}" style="--c:${LANE_COLORS[s.animal]}">
       <span class="face">${animalSVG(ANIMALS[s.animal].kind)}</span>
-      <span><b>${s.name}</b><small><span class="pill ${cls}">${s.levelName}</span><span>${s.bpm} BPM</span>${b ? `<span>ハイスコア ${b.score.toLocaleString()}</span>` : ''}</small></span>
+      <span><b>${s.name}</b><small><span class="pill ${cls}">${s.levelName}</span><span>${s.bpm} BPM</span>${b && b.score ? `<span>ハイスコア ${b.score.toLocaleString()}</span>` : ''}</small></span>
       <span class="bstars">${starText(b ? b.stars : 0)}</span></button>`;
   }).join('');
 }
@@ -1273,6 +1298,88 @@ document.addEventListener('touchend', e => {
 }, { passive:false });
 document.addEventListener('dblclick', e => e.preventDefault());
 
+/* =====================================================
+   Save code (あいことば): carries ★ and clothes to a new install, no server needed
+   ===================================================== */
+/* NEVER reorder: new songs are appended at the end so old codes keep working */
+const SAVE_IDS = ['kira', 'mary', 'london', 'march', 'jingle', 'ode', 'rainbow', 'elise', 'kaeru', 'farm', 'gcp', 'alps', 'birthday', 'minuet'];
+const KANA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみ';   // 32 letters = 5 bits each
+const slotItems = slot => ACCS.filter(x => x.slot === slot);
+const checksum = vals => vals.reduce((sum, v, i) => (sum + v * (i + 1)) % 32, 0);
+function makeCode() {
+  const bits = [], put = (v, n) => { for (let i = n - 1; i >= 0; i--) bits.push((v >> i) & 1); };
+  const d = store.data, st = k => Math.min(5, (d.best[k] || {}).stars || 0), a = accNow();
+  const idx = slot => a[slot] ? slotItems(slot).findIndex(x => x.id === a[slot]) + 1 : 0;
+  put(1, 4); put(SAVE_IDS.length, 5);
+  SAVE_IDS.forEach(id => { put(st(id), 3); put(st(id + '@hard'), 3); });
+  put(OUTFITS.indexOf(outfitNow()), 3); put(idx('head'), 3); put(idx('neck'), 2); put(idx('hand'), 2);
+  put(hardUnlocked() ? 1 : 0, 1); put(d.mode === 'hard' ? 1 : 0, 1); put(bgmOn() ? 1 : 0, 1);
+  while (bits.length % 5) bits.push(0);
+  const vals = [];
+  for (let i = 0; i < bits.length; i += 5) vals.push(parseInt(bits.slice(i, i + 5).join(''), 2));
+  vals.push(checksum(vals));
+  return vals.map(v => KANA[v]).join('');
+}
+function readCode(text) {
+  const chars = [...text.replace(/[\s\u3000・ー-]/g, '')]
+    .map(c => { const k = c.charCodeAt(0); return k >= 0x30a1 && k <= 0x30f6 ? String.fromCharCode(k - 0x60) : c; });   // カタカナ → ひらがな
+  const vals = chars.map(c => KANA.indexOf(c));
+  if (vals.length < 4 || vals.some(v => v < 0)) return null;
+  const sum = vals.pop();
+  if (checksum(vals) !== sum) return null;
+  const bits = [];
+  vals.forEach(v => { for (let i = 4; i >= 0; i--) bits.push((v >> i) & 1); });
+  let p = 0; const get = n => { let v = 0; for (let i = 0; i < n; i++) v = v * 2 + (bits[p++] || 0); return v; };
+  if (get(4) !== 1) return null;
+  const n = get(5); if (n > SAVE_IDS.length) return null;
+  const best = {};
+  for (let i = 0; i < n; i++) { best[SAVE_IDS[i]] = get(3); best[SAVE_IDS[i] + '@hard'] = get(3); }
+  const r = { best, outfit:get(3), head:get(3), neck:get(2), hand:get(2), hardOpen:get(1), hard:get(1), bgm:get(1) };
+  return p <= bits.length ? r : null;
+}
+function applyCode(r) {
+  const d = store.data;
+  for (const k in r.best) {
+    if (!r.best[k]) continue;
+    const cur = d.best[k] || { score:0, stars:0 };
+    d.best[k] = { score:cur.score || 0, stars:Math.max(cur.stars || 0, Math.min(5, r.best[k])) };
+  }
+  if (r.outfit < OUTFITS.length) d.outfit = r.outfit;
+  const pick = (slot, i) => (i ? (slotItems(slot)[i - 1] || {}).id || null : null);
+  d.acc = { head:pick('head', r.head), neck:pick('neck', r.neck), hand:pick('hand', r.hand) };
+  if (r.hardOpen) d.hardOpen = true;
+  d.mode = r.hard ? 'hard' : 'normal'; d.bgm = !!r.bgm;
+  store.save();
+}
+const groupCode = c => c.replace(/(.{4})/g, '$1 ').trim();
+function openSave() {
+  $('saveCode').textContent = groupCode(makeCode());
+  $('saveMsg').hidden = true; $('loadCode').value = '';
+  show('save');
+}
+function saveMsg(text, ok) { const m = $('saveMsg'); m.textContent = text; m.className = 'howto ' + (ok ? 'ok' : 'ng'); m.hidden = false; }
+$('btnSave').onclick = openSave;
+$('btnSaveBack').onclick = () => show('title');
+$('btnCopy').onclick = () => {
+  const code = $('saveCode').textContent;
+  const done = () => saveMsg('コピーしたよ！ メモアプリや LINE などに はりつけて のこしてね。', true);
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($('saveCode')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    saveMsg('あいことばを えらんだよ。ながおしして「コピー」してね。紙に かいても OK！', true); };
+  try { navigator.clipboard.writeText(code).then(done, fallback); } catch (e) { fallback(); }
+};
+$('btnLoad').onclick = () => {
+  const r = readCode($('loadCode').value);
+  if (!r) { saveMsg('あいことばが ちがうみたい。1もじずつ たしかめてね。', false); return; }
+  applyCode(r);
+  renderGirls();
+  $('saveCode').textContent = groupCode(makeCode());
+  saveMsg(`きろくが もどったよ！ いま ★ ${totalStars()} こ`, true);
+};
+$('loadCode').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnLoad').click(); });
+
+/* ask the browser not to clear our records when space runs low */
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* optional */ }
+
 /* installed-app build only (it links a manifest): cache everything so it plays offline */
 if ('serviceWorker' in navigator && document.querySelector('link[rel="manifest"]') && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('sw.js').catch(() => { /* still playable online */ });
@@ -1280,7 +1387,7 @@ if ('serviceWorker' in navigator && document.querySelector('link[rel="manifest"]
 
 show('title');
 layout();
-window.__game = { G, SONGS, press, startGame, store, renderSongs, renderWardrobe };
+window.__game = { G, SONGS, press, startGame, store, renderSongs, renderWardrobe, makeCode, readCode };
 
 </script>
 
