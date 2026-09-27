@@ -103,6 +103,11 @@ button{font-family:inherit}
   background:#fff;border-radius:8px;padding:1px 9px;box-shadow:0 2px 0 rgba(91,51,72,.15);display:none}
 @media (hover:hover) and (pointer:fine){.key{display:block}}
 #hud{position:absolute;left:0;right:0;top:0;padding:10px 14px 0;display:flex;align-items:center;gap:10px;pointer-events:none;z-index:3}
+#bgmBtn{position:absolute;top:10px;right:10px;z-index:30;font-family:var(--display);font-size:13px;border:0;border-radius:999px;padding:.45em .9em;
+  background:#fff;color:var(--pink-d);box-shadow:0 3px 0 rgba(91,51,72,.18);cursor:pointer}
+#bgmBtn.off{color:var(--ink-soft);background:#f3eef1}
+#bgmBtn:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
+#title,#select,#wardrobe{padding-top:52px}   /* room for the music button */
 #pauseBtn{pointer-events:auto;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--ink);font-size:16px;font-weight:900;
   box-shadow:0 3px 0 rgba(91,51,72,.2);cursor:pointer;flex:none}
 #prog{flex:1;height:12px;background:rgba(255,255,255,.85);border-radius:999px;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(91,51,72,.08)}
@@ -287,6 +292,7 @@ h2.ttl{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(26px,
     <aside id="right"><div id="friends"></div></aside>
   </div>
 
+  <button id="bgmBtn" type="button">♪ おんがく オン</button>
   <section class="screen" id="title">
     <h1 class="logo"><div class="l1"><span>ど</span><span>う</span><span>ぶ</span><span>つ</span></div><div class="l2">リズムパーティー</div></h1>
     <div id="titleCast"></div>
@@ -622,6 +628,17 @@ const SONGS = [
 ];
 SONGS.sort((a, b) => a.level - b.level);   // easy → hard (stable)
 
+/* menu BGM: an original, gentle music-box loop (8 bars) */
+const MENU_BGM = (() => {
+  const mel = parseMelody([
+    'E5:1 G5:.5 E5:.5 C5:1 G4:1  A4:1 C5:.5 E5:.5 A5:2  F5:1 E5:.5 D5:.5 C5:1 A4:1  B4:1 D5:.5 G5:.5 G5:2',
+    'E5:.5 F5:.5 G5:1 E5:1 C5:1  A4:.5 B4:.5 C5:1 E5:2  D5:1 F5:.5 E5:.5 D5:1 B4:1  C5:3 r:1',
+  ].join('  '));
+  const byStep = {};
+  mel.notes.forEach(n => { byStep[Math.round(n.beat * 2)] = n; });
+  return { bpm:100, steps:Math.round(mel.total * 2), byStep, chords:['C', 'Am', 'F', 'G', 'C', 'Am', 'Dm G', 'C'] };
+})();
+
 /* build note charts: lane = pitch rank quantised to 4 lanes (low → high) */
 for (const s of SONGS) {
   const mel = parseMelody(s.melody);
@@ -658,6 +675,7 @@ const Sound = {
     this.master.connect(comp); comp.connect(ac.destination);
     this.bus = ac.createGain(); this.bus.gain.value = .5; this.bus.connect(this.master);   // backing track
     this.lead = ac.createGain(); this.lead.gain.value = 1; this.lead.connect(this.master);   // player's melody
+    this.menuBus = ac.createGain(); this.menuBus.gain.value = 0.0001; this.menuBus.connect(this.master);   // menu BGM (faded in/out)
     const len = ac.sampleRate * 0.5, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     this.noiseBuf = buf;
@@ -737,6 +755,36 @@ const Sound = {
       if (i >= total) this.stopSong();
     }, 30);
   },
+  menuOn() {
+    if (!this.ac || this.menuTimer) return;
+    const ac = this.ac, now = ac.currentTime, step = 60 / MENU_BGM.bpm / 2, g = this.menuBus.gain;
+    g.cancelScheduledValues(now); g.setValueAtTime(Math.max(g.value, 0.0001), now); g.exponentialRampToValueAtTime(.5, now + .8);
+    const t0 = now + .12; let i = 0;
+    this.menuTimer = setInterval(() => {
+      const lim = ac.currentTime + .35;
+      while (t0 + i * step < lim) { this.menuStep(i % MENU_BGM.steps, t0 + i * step, step); i++; }
+    }, 40);
+  },
+  menuOff() {
+    if (!this.menuTimer) return;
+    clearInterval(this.menuTimer); this.menuTimer = null;
+    const now = this.ac.currentTime, g = this.menuBus.gain;
+    g.cancelScheduledValues(now); g.setValueAtTime(Math.max(g.value, 0.0001), now); g.exponentialRampToValueAtTime(0.0001, now + .35);
+  },
+  menuStep(s, t, step) {
+    const bar = Math.floor(s / 8), parts = MENU_BGM.chords[bar].split(' ');
+    const ch = CHORDS[parts[Math.min(parts.length - 1, Math.floor((s % 8) / (8 / parts.length)))]];
+    const d = this.menuBus;
+    if (s % 4 === 0) this.tone(t, this.mtof(ch.root), step * 3, { type:'triangle', vol:.32, atk:.01, dest:d });
+    if (s % 4 === 2) ch.tri.forEach(m => this.tone(t, this.mtof(m), step * 2.2, { type:'triangle', vol:.05, atk:.01, dest:d }));
+    const n = MENU_BGM.byStep[s];
+    if (n) {   // music-box bell
+      const f = this.mtof(n.midi), len = Math.max(.5, n.dur * step * 2 + .3);
+      this.tone(t, f, len, { type:'sine', vol:.2, atk:.004, dest:d });
+      this.tone(t, f * 2, len * .5, { type:'sine', vol:.06, atk:.004, dest:d });
+      this.tone(t, f * 3.01, .12, { type:'sine', vol:.03, atk:.002, dest:d });
+    }
+  },
   stopSong() { if (this.timer) { clearInterval(this.timer); this.timer = null; } },
   suspend() { if (this.ac) this.ac.suspend(); },
   resume() { if (this.ac) this.ac.resume(); },
@@ -770,8 +818,20 @@ const starText = (n, max = MAX_STARS) => Array.from({ length: max }, (_, i) => `
    Static UI
    ===================================================== */
 const SCREENS = ['title', 'select', 'wardrobe', 'pause', 'result'];
+const MENU_SCREENS = ['title', 'select', 'wardrobe'];
+let curScreen = 'title';
+const bgmOn = () => store.data.bgm !== false;
+function syncBgm() {
+  const menu = MENU_SCREENS.includes(curScreen);
+  $('bgmBtn').hidden = !menu;
+  $('bgmBtn').textContent = bgmOn() ? '♪ おんがく オン' : '♪ おんがく オフ';
+  $('bgmBtn').classList.toggle('off', !bgmOn());
+  if (menu && bgmOn() && !document.hidden) Sound.menuOn(); else Sound.menuOff();
+}
 function show(id) {
+  curScreen = id;
   SCREENS.forEach(s => { $(s).hidden = s !== id; });
+  syncBgm();
   $('play').style.visibility = (id === null || id === 'pause' || id === 'result') ? 'visible' : 'hidden';   // play field only behind play-related screens
 }
 
@@ -955,7 +1015,10 @@ window.addEventListener('keydown', e => {
   e.preventDefault(); if (!e.repeat) press(l);
 });
 window.addEventListener('keyup', e => { const l = KEYMAP[e.code]; if (l !== undefined) release(l); });
-document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'play') pauseGame(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && G.state === 'play') pauseGame();
+  else if (MENU_SCREENS.includes(curScreen)) syncBgm();   // stop the menu music in the background, restart on return
+});
 
 function startGame(song) {
   Sound.init();
@@ -993,7 +1056,8 @@ function pauseGame() { if (G.state !== 'play') return; G.state = 'pause'; Sound.
 function resumeGame() { if (G.state !== 'pause') return; show(null); Sound.resume(); G.state = 'play'; }
 function quitGame() {
   keepAwake(false);
-  Sound.stopSong(); if (Sound.ac) { Sound.ac.close(); Sound.ac = null; }
+  Sound.stopSong(); Sound.menuOff(); if (Sound.ac) { Sound.ac.close(); Sound.ac = null; }
+  Sound.init();   // fresh audio for the menu music (this runs from a button tap)
   G.state = 'idle'; $('app').classList.remove('fever'); $('count').textContent = ''; renderSongs(); show('select');
 }
 
@@ -1129,7 +1193,11 @@ $('btnSongs').onclick = () => { G.state = 'idle'; renderSongs(); show('select');
 /* iOS: stop long-press magnifier / callout on the lanes (pointer events still fire) */
 $('lanes').addEventListener('touchstart', e => e.preventDefault(), { passive:false });
 /* first touch anywhere wakes the audio (iOS needs a gesture) */
-document.addEventListener('touchend', function unlock() { Sound.init(); document.removeEventListener('touchend', unlock); }, { passive:true });
+['pointerup', 'keydown'].forEach(ev => document.addEventListener(ev, function unlock() {
+  Sound.init(); syncBgm();   // browsers only allow sound after the first tap / key
+  ['pointerup', 'keydown'].forEach(x => document.removeEventListener(x, unlock));
+}));
+$('bgmBtn').addEventListener('click', () => { Sound.init(); store.data.bgm = !bgmOn(); store.save(); syncBgm(); });
 /* stop pinch / double-tap zoom on phones (rapid tapping otherwise zooms the page) */
 ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive:false });
