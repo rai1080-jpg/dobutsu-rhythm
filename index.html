@@ -207,6 +207,14 @@ h2.ttl{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(26px,
 
 #wardrobeGrid{width:min(640px,100%);display:flex;flex-direction:column;gap:10px}
 .wgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%}
+.wtop{display:flex;align-items:center;justify-content:center;gap:14px;width:min(640px,100%)}
+#wPreview{height:clamp(150px,26vh,240px);aspect-ratio:260/380;flex:none}
+#wPreview svg{width:100%;height:100%;overflow:visible}
+.wtop .howto{flex:0 1 auto}
+#wTabs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:min(640px,100%)}
+.wtab{font-family:var(--display);font-size:14px;border:0;border-radius:999px;padding:.45em .95em;background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(91,51,72,.15);cursor:pointer}
+.wtab.sel{background:var(--pink);color:#fff;box-shadow:0 3px 0 var(--pink-d)}
+.wtab:focus-visible{outline:4px solid var(--sky);outline-offset:2px}
 .wsec{margin:8px 0 0;font-family:var(--display);font-weight:400;font-size:clamp(17px,3.2vmin,22px);color:var(--pink-d);text-align:left;-webkit-text-stroke:5px #fff;paint-order:stroke fill}
 .outfit em.need{font-size:.85em;line-height:1.3}
 #modeRow .mode{font-family:var(--display);font-size:clamp(14px,2.8vmin,18px);border:0;border-radius:999px;padding:.5em 1.1em;cursor:pointer;background:#fff;color:var(--ink);box-shadow:0 4px 0 rgba(91,51,72,.18)}
@@ -318,7 +326,8 @@ h2.ttl{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(26px,
 
   <section class="screen veil" id="wardrobe" hidden>
     <h2 class="ttl">おきがえ</h2>
-    <div id="starTotal" class="howto"></div>
+    <div class="wtop"><div id="wPreview"></div><div id="starTotal" class="howto"></div></div>
+    <div id="wTabs" role="tablist"></div>
     <div id="wardrobeGrid"></div>
     <div class="stickyBar"><button class="btn small" id="btnWardrobeBack">できた！</button></div>
   </section>
@@ -362,7 +371,8 @@ h2.ttl{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(26px,
    ===================================================== */
 const OUTLINE = '#5b3a2e';
 
-/* need = total ★ needed (normal mode max 40; ★ from むずかしいモード also count) */
+/* need = total ★ needed (★ from むずかしいモード also count).
+   APPEND ONLY: the index is stored in saves and あいことば; the wardrobe sorts by need for display. */
 const OUTFITS = [
   { name:'ピンクのワンピース', dress:'#ff8db9', light:'#ffc2d9', ribbon:'#ff4f93', need:0 },
   { name:'みずいろのワンピース', dress:'#6cc4ff', light:'#b5e2ff', ribbon:'#ffd23f', need:3 },
@@ -371,9 +381,40 @@ const OUTFITS = [
   { name:'むらさきドレス', dress:'#b98cff', light:'#dcc6ff', ribbon:'#ffd23f', need:22 },
   { name:'にじいろドレス', dress:'url(#rbGrad)', light:'#fff0f7', ribbon:'#ff4f93', sleeveL:'#ffd0e6', sleeveR:'#c9b6ff', need:32 },
   { name:'ほしぞらドレス', dress:'url(#nightGrad)', light:'#fff6c9', ribbon:'#ffd23f', sleeveL:'#4a58b8', sleeveR:'#4a58b8', stars:true, need:55 },
+  { name:'みずたまワンピース', dress:'#ff8db9', pattern:{ type:'dots', c:'#fff' }, light:'#fff0f6', ribbon:'#ff4f93', need:1 },
+  { name:'ボーダーワンピース', dress:'#ffffff', pattern:{ type:'stripe', c:'#4a6fd6' }, light:'#dfe7ff', ribbon:'#ff4f7a', need:6 },
+  { name:'セーラーふく', dress:'#f7f9ff', sailor:'#3d5aa8', light:'#3d5aa8', ribbon:'#e5484d', need:11 },
+  { name:'ハートのワンピース', dress:'#ffc2d9', pattern:{ type:'hearts', c:'#ff4f7a' }, light:'#fff0f6', ribbon:'#ff4f7a', need:17 },
+  { name:'いちごワンピース', dress:'#ff5a6e', pattern:{ type:'seeds', c:'#ffe36a' }, light:'#8fd694', ribbon:'#6cc27a', need:27 },
+  { name:'チェックのワンピース', dress:'#ffd23f', pattern:{ type:'check', c:'#ff8a1c' }, light:'#fff3c4', ribbon:'#e5484d', need:42 },
 ];
 
-const SLOTS = [{ id:'head', name:'かみかざり' }, { id:'neck', name:'ネックレス' }, { id:'hand', name:'もちもの' }];
+const HAIRSTYLES = [
+  { id:'braid', name:'みつあみ' }, { id:'twin', name:'ツインテール' }, { id:'pony', name:'ポニーテール' },
+  { id:'long', name:'ロングヘア' }, { id:'bob', name:'ショートボブ' }, { id:'bun', name:'おだんご' }, { id:'twinbraid', name:'ふたつみつあみ' },
+];
+const HAIR_COLORS = [
+  { id:'brown', name:'ちゃいろ', c:'#6b3f24', hi:'#9a643e', need:0 },
+  { id:'black', name:'くろ', c:'#2e2330', hi:'#5d4b61', need:0 },
+  { id:'choco', name:'こげちゃ', c:'#4a2c1c', hi:'#7a5038', need:0 },
+  { id:'blond', name:'きんいろ', c:'#e0a93a', hi:'#f7d888', need:4 },
+  { id:'pink', name:'ピンク', c:'#f27aa8', hi:'#ffb8d2', need:11 },
+  { id:'sky', name:'みずいろ', c:'#4f9fe0', hi:'#a6d6ff', need:18 },
+  { id:'purple', name:'むらさき', c:'#8a63d2', hi:'#c3a8ff', need:25 },
+  { id:'silver', name:'ぎんいろ', c:'#aab0c2', hi:'#eef0f7', need:44 },
+];
+const SHOES = [
+  { id:'red', name:'あかい くつ', c:'#ff5a6e', need:0 },
+  { id:'pink', name:'ピンクの くつ', c:'#ff8db9', need:0 },
+  { id:'black', name:'くろい くつ', c:'#3b2b35', need:3 },
+  { id:'sneaker', name:'スニーカー', type:'sneaker', need:5 },
+  { id:'boots', name:'ブーツ', type:'boots', c:'#8a5a3b', need:13 },
+  { id:'ribbon', name:'リボンの くつ', type:'ribbon', c:'#ffd23f', need:21 },
+  { id:'glass', name:'ガラスの くつ', type:'glass', need:38 },
+];
+
+const SLOTS = [{ id:'head', name:'かみかざり' }, { id:'face', name:'かお' }, { id:'neck', name:'ネックレス' }, { id:'hand', name:'もちもの' }];
+/* APPEND ONLY (order within a slot is stored in あいことば) */
 const ACCS = [
   { id:'ribbon',  slot:'head', name:'おおきなリボン', need:0 },
   { id:'flower',  slot:'head', name:'おはなのかんむり', need:5 },
@@ -386,8 +427,23 @@ const ACCS = [
   { id:'mic',     slot:'hand', name:'マイク', need:2 },
   { id:'wand',    slot:'hand', name:'ほしのステッキ', need:12 },
   { id:'balloon', slot:'hand', name:'ふうせん', need:36 },
+  /* --- added later --- */
+  { id:'bunny',   slot:'head', name:'うさみみカチューシャ', need:3 },
+  { id:'straw',   slot:'head', name:'むぎわらぼうし', need:9 },
+  { id:'heartpin', slot:'head', name:'ハートのヘアピン', need:13 },
+  { id:'beret',   slot:'head', name:'ベレーぼう', need:19 },
+  { id:'headphone', slot:'head', name:'ヘッドホン', need:30 },
+  { id:'bowtie',  slot:'neck', name:'リボンタイ', need:4 },
+  { id:'medal',   slot:'neck', name:'きんメダル', need:28 },
+  { id:'candy',   slot:'hand', name:'ぺろぺろキャンディ', need:1 },
+  { id:'bouquet', slot:'hand', name:'はなたば', need:8 },
+  { id:'icecream', slot:'hand', name:'ソフトクリーム', need:15 },
+  { id:'teddy',   slot:'hand', name:'くまの ぬいぐるみ', need:24 },
+  { id:'sticker', slot:'face', name:'ほしの シール', need:2 },
+  { id:'glasses', slot:'face', name:'まるめがね', need:7 },
+  { id:'heartglasses', slot:'face', name:'ハートの サングラス', need:20 },
 ];
-const DEFAULT_ACC = { head:'ribbon', neck:null, hand:null };
+const DEFAULT_ACC = { head:'ribbon', face:null, neck:null, hand:null, hair:'braid', hairColor:'brown', shoes:'red' };
 
 const starPts = (cx, cy, r) => Array.from({ length:10 }, (_, i) => {
   const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r;
@@ -398,9 +454,11 @@ const bowSVG = (x, y, r, c, s = 1) => `<g transform="translate(${x} ${y}) rotate
     <circle r="6.5" fill="${c}" stroke="#fff" stroke-opacity=".55" stroke-width="2"/></g>`;
 const flowerSVG = (x, y, c) => `<g>${[0, 1, 2, 3, 4].map(i => { const a = i * 1.2566 - 1.57;
     return `<circle cx="${(x + Math.cos(a) * 6).toFixed(1)}" cy="${(y + Math.sin(a) * 6).toFixed(1)}" r="5.2" fill="${c}"/>`; }).join('')}<circle cx="${x}" cy="${y}" r="4" fill="#ffd23f"/></g>`;
+const heartPath = (cx, cy, r) => `M${cx} ${cy + r} C${cx - 1.6 * r} ${cy + .1 * r} ${cx - 1.1 * r} ${cy - 1.2 * r} ${cx} ${cy - .45 * r} C${cx + 1.1 * r} ${cy - 1.2 * r} ${cx + 1.6 * r} ${cy + .1 * r} ${cx} ${cy + r} Z`;
 
 function accSVG(id, o) {
   switch (id) {
+    /* ---- head ---- */
     case 'ribbon':  return bowSVG(172, 52, 20, o.ribbon, 1.35);
     case 'flower':  return `<ellipse cx="88" cy="66" rx="9" ry="5" transform="rotate(-40 88 66)" fill="#6ccf8a"/><ellipse cx="172" cy="66" rx="9" ry="5" transform="rotate(40 172 66)" fill="#6ccf8a"/>
       <ellipse cx="110" cy="46" rx="9" ry="5" transform="rotate(-15 110 46)" fill="#6ccf8a"/><ellipse cx="150" cy="46" rx="9" ry="5" transform="rotate(15 150 46)" fill="#6ccf8a"/>`
@@ -408,13 +466,32 @@ function accSVG(id, o) {
     case 'cat':     return `<path d="M66 100 Q130 8 194 100" stroke="#ff8db9" stroke-width="8" fill="none" stroke-linecap="round"/>
       <path d="M76 74 L80 28 L114 50 Z" fill="#fff" stroke="#ff8db9" stroke-width="5" stroke-linejoin="round"/><path d="M85 64 L87 40 L104 52 Z" fill="#ffb5cb"/>
       <path d="M184 74 L180 28 L146 50 Z" fill="#fff" stroke="#ff8db9" stroke-width="5" stroke-linejoin="round"/><path d="M175 64 L173 40 L156 52 Z" fill="#ffb5cb"/>`;
+    case 'bunny':   return `<ellipse cx="104" cy="22" rx="12" ry="32" transform="rotate(-12 104 22)" fill="#fff" stroke="#ff8db9" stroke-width="4"/><ellipse cx="104" cy="24" rx="5" ry="22" transform="rotate(-12 104 24)" fill="#ffb5cb"/>
+      <ellipse cx="156" cy="22" rx="12" ry="32" transform="rotate(12 156 22)" fill="#fff" stroke="#ff8db9" stroke-width="4"/><ellipse cx="156" cy="24" rx="5" ry="22" transform="rotate(12 156 24)" fill="#ffb5cb"/>
+      <path d="M66 100 Q130 8 194 100" stroke="#ff8db9" stroke-width="8" fill="none" stroke-linecap="round"/>`;
     case 'starpin': return `<polygon points="${starPts(176, 66, 12)}" fill="#ffd23f" stroke="#e09b00" stroke-width="2.5" stroke-linejoin="round"/>
       <polygon points="${starPts(192, 90, 8)}" fill="#ff8db9" stroke="#e05a92" stroke-width="2" stroke-linejoin="round"/><polygon points="${starPts(160, 52, 6)}" fill="#8fd3ff" stroke="#5aa9ff" stroke-width="2" stroke-linejoin="round"/>`;
+    case 'heartpin': return `<path d="${heartPath(176, 64, 11)}" fill="#ff4f7a" stroke="#fff" stroke-width="2"/><path d="${heartPath(193, 86, 7)}" fill="#ffb5cb" stroke="#fff" stroke-width="2"/>`;
     case 'tiara':   return `<g transform="translate(130 42)"><path d="M-32 10 Q0 0 32 10 L28 -6 L15 3 L0 -18 L-15 3 L-28 -6 Z" fill="#e6ecff" stroke="#9fb3e8" stroke-width="3" stroke-linejoin="round"/>
       <circle cy="-5" r="5.5" fill="#ff6fa5" stroke="#fff" stroke-width="1.5"/><circle cx="-17" cy="4" r="3.2" fill="#5aa9ff"/><circle cx="17" cy="4" r="3.2" fill="#5aa9ff"/></g>`;
     case 'crown':   return `<g transform="translate(130 34) scale(1.3)"><path d="M-22 6 L-24 -14 L-11 -3 L0 -20 L11 -3 L24 -14 L22 6 Z" fill="#ffd23f" stroke="#e09b00" stroke-width="3" stroke-linejoin="round"/>
       <circle cx="0" cy="-2" r="4" fill="#ff6fa5"/><circle cx="-13" cy="0" r="2.6" fill="#5aa9ff"/><circle cx="13" cy="0" r="2.6" fill="#43c59e"/>
       <circle cx="-24" cy="-15" r="2.6" fill="#fff6b8"/><circle cx="0" cy="-21" r="2.6" fill="#fff6b8"/><circle cx="24" cy="-15" r="2.6" fill="#fff6b8"/></g>`;
+    case 'straw':   return `<ellipse cx="130" cy="66" rx="96" ry="18" fill="#f2cf6e" stroke="#d9a93a" stroke-width="3"/>
+      <path d="M82 66 C80 16 180 16 178 66 Z" fill="#f7da83" stroke="#d9a93a" stroke-width="3"/><path d="M82 54 Q130 62 178 54 L178 66 Q130 74 82 66 Z" fill="#ff6f8f"/>
+      ${flowerSVG(166, 58, '#fff')}`;
+    case 'beret':   return `<ellipse cx="112" cy="46" rx="60" ry="22" transform="rotate(-12 112 46)" fill="#e5484d"/><ellipse cx="104" cy="40" rx="30" ry="8" transform="rotate(-12 104 40)" fill="#ff6f75" opacity=".6"/>
+      <circle cx="112" cy="22" r="5" fill="#e5484d"/>`;
+    case 'headphone': return `<path d="M60 124 C54 36 206 36 200 124" stroke="#6a4fd0" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <rect x="44" y="104" width="24" height="44" rx="11" fill="#8f7ae6"/><rect x="192" y="104" width="24" height="44" rx="11" fill="#8f7ae6"/>
+      <rect x="52" y="112" width="10" height="28" rx="5" fill="#ffb5cb"/><rect x="198" y="112" width="10" height="28" rx="5" fill="#ffb5cb"/>`;
+    /* ---- face ---- */
+    case 'sticker': return `<polygon points="${starPts(178, 152, 9)}" fill="#ffd23f" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="${heartPath(82, 152, 6)}" fill="#ff6fa5" stroke="#fff" stroke-width="1.5"/>`;
+    case 'glasses': return `<g fill="rgba(255,255,255,.2)" stroke="#5b3348" stroke-width="4"><circle cx="103" cy="128" r="20"/><circle cx="157" cy="128" r="20"/></g>
+      <path d="M123 126 Q130 120 137 126" stroke="#5b3348" stroke-width="4" fill="none"/>`;
+    case 'heartglasses': return `<path d="${heartPath(103, 126, 19)}" fill="#ff6fa5" fill-opacity=".78" stroke="#d6407f" stroke-width="3"/><path d="${heartPath(157, 126, 19)}" fill="#ff6fa5" fill-opacity=".78" stroke="#d6407f" stroke-width="3"/>
+      <path d="M121 122 Q130 116 139 122" stroke="#d6407f" stroke-width="3.5" fill="none"/><path d="M92 118 L98 124" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>`;
+    /* ---- neck ---- */
     case 'heart':   return `<path d="M106 202 Q130 242 154 202" stroke="#e0a800" stroke-width="2.5" fill="none"/>
       <path d="M130 234 C116 224 118 211 125 212 C128 212 130 215 130 217 C130 215 132 212 135 212 C142 211 144 224 130 234 Z" fill="#ff4f7a" stroke="#fff" stroke-width="2"/>`;
     case 'pearl': {
@@ -423,6 +500,10 @@ function accSVG(id, o) {
         s += `<circle cx="${(u * u * 104 + 2 * u * t * 130 + t * t * 156).toFixed(1)}" cy="${(u * u * 202 + 2 * u * t * 242 + t * t * 202).toFixed(1)}" r="4.4" fill="#fff" stroke="#e6cfe0" stroke-width="1.5"/>`; }
       return s;
     }
+    case 'bowtie':  return bowSVG(130, 214, 0, '#e5484d', 1.05);
+    case 'medal':   return `<path d="M114 200 L126 236 M146 200 L134 236" stroke="#5aa9ff" stroke-width="9" stroke-linecap="round"/><path d="M114 200 L126 236 M146 200 L134 236" stroke="#ff6f8f" stroke-width="3"/>
+      <circle cx="130" cy="246" r="14" fill="#ffd23f" stroke="#e09b00" stroke-width="3"/><polygon points="${starPts(130, 246, 7.5)}" fill="#fff6b8"/>`;
+    /* ---- hand (held at 193,268) ---- */
     case 'mic':     return `<g transform="rotate(-18 193 268)"><rect x="188" y="236" width="10" height="40" rx="4" fill="#5b3348"/>
       <circle cx="193" cy="230" r="12.5" fill="#d7d7e4" stroke="#5b3348" stroke-width="3"/><path d="M184 226 H202 M183 232 H203" stroke="#9a9ab2" stroke-width="2"/></g>`;
     case 'wand':    return `<path d="M193 272 L214 212" stroke="#ff8db9" stroke-width="6" stroke-linecap="round"/>
@@ -431,50 +512,132 @@ function accSVG(id, o) {
     case 'balloon': return `<path d="M193 268 Q206 230 215 177" stroke="#8d6478" stroke-width="2" fill="none"/>
       <ellipse cx="216" cy="146" rx="25" ry="30" fill="#ff5a7e"/><ellipse cx="206" cy="135" rx="6" ry="11" fill="#fff" opacity=".5"/>
       <path d="M211 178 L221 178 L216 171 Z" fill="#ff5a7e"/>`;
+    case 'candy':   return `<path d="M193 270 L206 224" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M193 270 L206 224" stroke="#e6d6de" stroke-width="1.5"/>
+      <circle cx="208" cy="210" r="18" fill="#ff8db9" stroke="#fff" stroke-width="3"/>
+      <path d="M208 210 m-11 0 a11 11 0 1 1 11 11 a7 7 0 1 1 -7 -7 a3 3 0 1 1 3 3" stroke="#fff" stroke-width="3" fill="none"/>`;
+    case 'bouquet': return `<path d="M192 272 L202 228 M194 272 L214 236 M192 272 L192 226" stroke="#43a86a" stroke-width="3"/>
+      ${flowerSVG(202, 224, '#ff8db9')}${flowerSVG(216, 236, '#ffd23f')}${flowerSVG(190, 222, '#8fd3ff')}
+      <path d="M180 246 L212 246 L196 282 Z" fill="#fff0f6" stroke="#ffb5cb" stroke-width="2" stroke-linejoin="round"/>`;
+    case 'icecream': return `<ellipse cx="196" cy="244" rx="14" ry="9" fill="#fff6ea"/><ellipse cx="196" cy="233" rx="11" ry="8" fill="#ffd0e3"/><ellipse cx="197" cy="223" rx="6" ry="6" fill="#fff6ea"/>
+      <path d="M184 250 L208 250 L196 284 Z" fill="#e8b36a" stroke="#c98a3a" stroke-width="2" stroke-linejoin="round"/><path d="M188 256 L204 256 M191 264 L201 264" stroke="#c98a3a" stroke-width="1.5"/>`;
+    case 'teddy':   return animalSVG('bear').replace('<svg ', '<svg x="184" y="214" width="52" height="52" ');
   }
   return '';
 }
 
-function girlSVG(o, acc = DEFAULT_ACC, vb = '0 0 260 380') {
-  const hair = '#6b3f24', hairHi = '#9a643e', skin = '#ffe1c9', ink = '#3b2417';
-  const A = acc || {};
-  /* one long braid over her right shoulder: overlapping, alternately tilted lobes */
-  let braid = '';
-  for (let i = 0; i < 10; i++) {
-    const t = i / 9, x = 78 + 26 * t, y = 158 + 138 * t, rx = 16 - 4 * t;
-    braid += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${(rx * .78).toFixed(1)}" transform="rotate(${i % 2 ? 32 : -26} ${x.toFixed(1)} ${y.toFixed(1)})" fill="${hair}"/>
-      <path d="M${(x - rx * .5).toFixed(1)} ${(y - 2).toFixed(1)} Q${x.toFixed(1)} ${(y + (i % 2 ? 5 : -5)).toFixed(1)} ${(x + rx * .5).toFixed(1)} ${(y + 2).toFixed(1)}" stroke="${hairHi}" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/>`;
+/* dress fabric patterns (ids are unique per colour so several SVGs on one page never clash) */
+const patId = o => `pat_${o.pattern.type}_${(o.dress + o.pattern.c).replace(/[^0-9a-z]/gi, '')}`;
+function patternDef(o) {
+  if (!o.pattern) return '';
+  const b = o.dress, c = o.pattern.c;
+  const P = {
+    dots:   [16, `<circle cx="4" cy="4" r="2.8" fill="${c}"/><circle cx="12" cy="12" r="2.8" fill="${c}"/>`],
+    stripe: [12, `<rect y="0" width="12" height="5" fill="${c}"/>`],
+    hearts: [22, `<path d="${heartPath(11, 11, 5)}" fill="${c}"/>`],
+    seeds:  [14, `<ellipse cx="4" cy="4" rx="1.3" ry="2.1" fill="${c}"/><ellipse cx="11" cy="11" rx="1.3" ry="2.1" fill="${c}"/>`],
+    check:  [20, `<rect width="10" height="20" fill="${c}" opacity=".45"/><rect width="20" height="10" fill="${c}" opacity=".45"/>`],
+  }[o.pattern.type];
+  return `<pattern id="${patId(o)}" width="${P[0]}" height="${P[0]}" patternUnits="userSpaceOnUse"><rect width="${P[0]}" height="${P[0]}" fill="${b}"/>${P[1]}</pattern>`;
+}
+
+/* one braid from (x0,y0) to (x1,y1): overlapping, alternately tilted lobes + tuft + hair tie */
+function braidSVG(x0, y0, x1, y1, n, hair, hi, tie) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1), x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t, rx = 16 - 4 * t;
+    s += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${(rx * .78).toFixed(1)}" transform="rotate(${i % 2 ? 32 : -26} ${x.toFixed(1)} ${y.toFixed(1)})" fill="${hair}"/>
+      <path d="M${(x - rx * .5).toFixed(1)} ${(y - 2).toFixed(1)} Q${x.toFixed(1)} ${(y + (i % 2 ? 5 : -5)).toFixed(1)} ${(x + rx * .5).toFixed(1)} ${(y + 2).toFixed(1)}" stroke="${hi}" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/>`;
   }
-  braid += `<path d="M97 304 Q92 324 100 336 Q106 326 106 336 Q114 322 110 304 Z" fill="${hair}"/>${bowSVG(104, 304, -10, o.ribbon, .72)}`;
+  const X = x1, Y = y1;
+  s += `<path d="M${X - 7} ${Y + 8} Q${X - 12} ${Y + 28} ${X - 4} ${Y + 40} Q${X + 2} ${Y + 30} ${X + 2} ${Y + 40} Q${X + 10} ${Y + 26} ${X + 6} ${Y + 8} Z" fill="${hair}"/>${bowSVG(X, Y + 8, -10, tie, .72)}`;
+  return s;
+}
+
+function shoesSVG(id) {
+  const S = SHOES.find(x => x.id === id) || SHOES[0];
+  const foot = (x, fill, extra = '') => `<ellipse cx="${x}" cy="346" rx="21" ry="10" fill="${fill}" ${extra}/>`;
+  return [111, 149].map(x => {
+    switch (S.type) {
+      case 'sneaker': return `<ellipse cx="${x}" cy="347" rx="22" ry="9.5" fill="#fff" stroke="#5aa9ff" stroke-width="3"/><path d="M${x - 20} 350 Q${x} 358 ${x + 20} 350" stroke="#5aa9ff" stroke-width="4" fill="none"/>
+        <circle cx="${x - 5}" cy="342" r="1.8" fill="#5aa9ff"/><circle cx="${x + 3}" cy="342" r="1.8" fill="#5aa9ff"/>`;
+      case 'boots':   return `<rect x="${x - 12}" y="310" width="24" height="38" rx="8" fill="${S.c}"/>${foot(x, S.c)}<rect x="${x - 13}" y="308" width="26" height="7" rx="3.5" fill="#f5dcb8"/>`;
+      case 'ribbon':  return foot(x, S.c) + bowSVG(x, 340, 0, '#ff4f93', .45);
+      case 'glass':   return foot(x, '#e3f6ff', 'stroke="#8fd3ff" stroke-width="3"') + `<polygon points="${starPts(x + 9, 342, 5)}" fill="#fff"/><path d="M${x - 12} 344 Q${x - 4} 340 ${x + 2} 344" stroke="#fff" stroke-width="2" fill="none"/>`;
+      default:        return foot(x, S.c);
+    }
+  }).join('');
+}
+
+function girlSVG(o, acc = DEFAULT_ACC, vb = '0 0 260 380') {
+  const A = { ...DEFAULT_ACC, ...(acc || {}) };
+  const HC = HAIR_COLORS.find(x => x.id === A.hairColor) || HAIR_COLORS[0];
+  const hair = HC.c, hairHi = HC.hi, skin = '#ffe1c9', ink = '#3b2417';
+  const dressFill = o.pattern ? `url(#${patId(o)})` : o.dress;
+  const sleeveL = o.sleeveL || o.dress, sleeveR = o.sleeveR || o.dress;
+
+  /* ---- hairstyle layers: back (behind body), front (over the dress), top (behind the crown of the head), locks (beside the face) ---- */
+  const nape = `<path d="M64 112 C52 150 58 186 76 200 L184 200 C202 186 208 150 196 112 Z" fill="${hair}"/>`;
+  let back = nape, front = '', top = '', topAfter = '';
+  let locks = `<path d="M62 112 C56 140 60 168 70 186 C74 160 72 136 70 116 Z" fill="${hair}"/><path d="M198 112 C204 140 200 168 190 186 C186 160 188 136 190 116 Z" fill="${hair}"/>`;
+  const tail = (cx, rot, cls, ox, tieX, tieR) => `<g class="${cls}" style="transform-origin:${ox}px 96px"><ellipse cx="${cx}" cy="158" rx="27" ry="66" transform="rotate(${rot} ${cx} 158)" fill="${hair}"/>
+      <ellipse cx="${cx - Math.sign(rot) * 6}" cy="150" rx="8" ry="34" transform="rotate(${rot} ${cx} 150)" fill="${hairHi}" opacity=".55"/>${bowSVG(tieX, 92, tieR, o.ribbon)}</g>`;
+  switch (A.hair) {
+    case 'twin':
+      back = nape + tail(46, 10, 'tailL', 66, 64, -25) + tail(214, -10, 'tailR', 194, 196, 25); break;
+    case 'pony':
+      back = nape + `<g class="tailR" style="transform-origin:198px 72px"><ellipse cx="214" cy="140" rx="25" ry="66" transform="rotate(-16 214 140)" fill="${hair}"/>
+        <ellipse cx="210" cy="132" rx="7" ry="34" transform="rotate(-16 210 132)" fill="${hairHi}" opacity=".55"/>${bowSVG(204, 66, 30, o.ribbon, .8)}</g>`; break;
+    case 'long':
+      back = `<path d="M62 108 C44 170 48 236 66 268 Q130 284 194 268 C212 236 216 170 198 108 Z" fill="${hair}"/>
+        <path d="M74 206 Q70 236 80 262 M186 206 Q190 236 180 262" stroke="${hairHi}" stroke-width="4" fill="none" opacity=".5" stroke-linecap="round"/>`;
+      locks = `<path d="M62 112 C54 150 58 190 70 214 C76 180 72 140 70 116 Z" fill="${hair}"/><path d="M198 112 C206 150 202 190 190 214 C184 180 188 140 190 116 Z" fill="${hair}"/>`; break;
+    case 'bob':
+      back = `<path d="M62 112 C54 150 58 172 74 180 L186 180 C202 172 206 150 198 112 Z" fill="${hair}"/>`;
+      locks = `<path d="M60 108 C50 140 54 170 74 178 C74 156 72 132 72 114 Z" fill="${hair}"/><path d="M200 108 C210 140 206 170 186 178 C186 156 188 132 188 114 Z" fill="${hair}"/>`; break;
+    case 'bun':
+      top = `<circle cx="130" cy="30" r="27" fill="${hair}"/><path d="M114 20 Q128 8 146 16" stroke="${hairHi}" stroke-width="4" fill="none" stroke-linecap="round" opacity=".6"/>`;
+      topAfter = `<path d="M108 34 Q130 25 152 34" stroke="${o.ribbon}" stroke-width="6" fill="none" stroke-linecap="round"/>`; break;
+    case 'twinbraid':
+      front = `<g class="tailL" style="transform-origin:76px 160px">${braidSVG(74, 158, 90, 280, 9, hair, hairHi, o.ribbon)}</g>
+        <g class="tailR" style="transform-origin:184px 160px">${braidSVG(186, 158, 170, 280, 9, hair, hairHi, o.ribbon)}</g>`; break;
+    default:   /* braid */
+      front = `<g class="tailL" style="transform-origin:80px 160px">${braidSVG(78, 158, 104, 296, 10, hair, hairHi, o.ribbon)}</g>`;
+  }
+
   const skirtStars = o.stars ? [[104, 250, 5], [150, 238, 4], [132, 276, 6], [164, 280, 4], [96, 284, 3.5]]
     .map(([x, y, r]) => `<polygon points="${starPts(x, y, r)}" fill="#fff6c9"/>`).join('') : '';
-  const collarBow = A.neck ? '' : bowSVG(130, 224, 0, o.ribbon, .78);
+  const collar = o.sailor
+    ? `<path d="M98 198 L84 228 Q130 246 176 228 L162 198 Q130 232 98 198 Z" fill="${o.sailor}"/><path d="M90 224 Q130 240 170 224" stroke="#fff" stroke-width="3" fill="none"/>`
+    : `<path d="M108 198 Q130 226 152 198 Q130 208 108 198 Z" fill="#fff"/>`;
+  const collarBow = A.neck ? '' : bowSVG(130, o.sailor ? 230 : 224, 0, o.ribbon, .78);
   return `<svg class="girl" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <defs><linearGradient id="rbGrad" x1="0" y1="0" x2="1" y2="1">
     <stop offset="0" stop-color="#ff8db9"/><stop offset=".3" stop-color="#ffd23f"/><stop offset=".55" stop-color="#6ee7b7"/><stop offset=".8" stop-color="#6cc4ff"/><stop offset="1" stop-color="#b98cff"/></linearGradient>
-    <linearGradient id="nightGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34449c"/><stop offset="1" stop-color="#7b5cd6"/></linearGradient></defs>
+    <linearGradient id="nightGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34449c"/><stop offset="1" stop-color="#7b5cd6"/></linearGradient>${patternDef(o)}</defs>
   <ellipse cx="130" cy="362" rx="70" ry="9" fill="#5b3348" opacity=".14"/>
   <g class="body">
-    <path d="M64 112 C52 150 58 186 76 200 L184 200 C202 186 208 150 196 112 Z" fill="${hair}"/>
+    ${back}
     <rect x="103" y="292" width="17" height="50" rx="8" fill="${skin}"/><rect x="140" y="292" width="17" height="50" rx="8" fill="${skin}"/>
     <rect x="102" y="322" width="19" height="14" fill="#fff"/><rect x="139" y="322" width="19" height="14" fill="#fff"/>
-    <ellipse cx="111" cy="346" rx="21" ry="10" fill="#ff5a6e"/><ellipse cx="149" cy="346" rx="21" ry="10" fill="#ff5a6e"/>
-    <path d="M100 198 Q130 210 160 198 L184 298 Q130 316 76 298 Z" fill="${o.dress}"/>
+    ${shoesSVG(A.shoes)}
+    <path d="M100 198 Q130 210 160 198 L184 298 Q130 316 76 298 Z" fill="${dressFill}"/>
     <path d="M76 294 Q92 318 108 296 Q124 320 140 296 Q156 320 172 296 Q182 314 186 296 L184 286 L76 286 Z" fill="${o.light}"/>
     ${skirtStars}
-    <path d="M108 198 Q130 226 152 198 Q130 208 108 198 Z" fill="#fff"/>
+    ${collar}
     ${collarBow}
     ${A.neck ? accSVG(A.neck, o) : ''}
-    <g class="armL"><path d="M96 214 L68 266" stroke="${skin}" stroke-width="17" stroke-linecap="round"/><circle cx="96" cy="214" r="15" fill="${o.sleeveL || o.dress}"/><circle cx="67" cy="268" r="10.5" fill="${skin}"/></g>
-    <g class="armR"><path d="M164 214 L192 266" stroke="${skin}" stroke-width="17" stroke-linecap="round"/><circle cx="164" cy="214" r="15" fill="${o.sleeveR || o.dress}"/>${A.hand ? accSVG(A.hand, o) : ''}<circle cx="193" cy="268" r="10.5" fill="${skin}"/></g>
-    <g class="tailL">${braid}</g>
+    <g class="armL"><path d="M96 214 L68 266" stroke="${skin}" stroke-width="17" stroke-linecap="round"/><circle cx="96" cy="214" r="15" fill="${sleeveL}"/><circle cx="67" cy="268" r="10.5" fill="${skin}"/></g>
+    <g class="armR"><path d="M164 214 L192 266" stroke="${skin}" stroke-width="17" stroke-linecap="round"/><circle cx="164" cy="214" r="15" fill="${sleeveR}"/>${A.hand ? accSVG(A.hand, o) : ''}<circle cx="193" cy="268" r="10.5" fill="${skin}"/></g>
+    ${front}
     <g class="head">
+      ${top}
       <path d="M62 116 C56 46 100 28 130 28 C160 28 204 46 198 116 Z" fill="${hair}"/>
       <rect x="112" y="176" width="36" height="34" rx="14" fill="${skin}"/>
       <ellipse cx="130" cy="122" rx="67" ry="62" fill="${skin}"/>
       <path d="M60 116 C56 52 98 34 130 34 C162 34 204 52 200 116 C194 92 184 80 166 74 C152 90 128 92 116 76 C100 86 76 96 60 116 Z" fill="${hair}"/>
       <path d="M92 54 Q116 40 142 44" stroke="${hairHi}" stroke-width="7" stroke-linecap="round" fill="none" opacity=".6"/>
-      <path d="M62 112 C56 140 60 168 70 186 C74 160 72 136 70 116 Z" fill="${hair}"/><path d="M198 112 C204 140 200 168 190 186 C186 160 188 136 190 116 Z" fill="${hair}"/>
+      ${topAfter}
+      ${locks}
       <g class="g-eyes-n"><ellipse cx="103" cy="128" rx="10.5" ry="14" fill="${ink}"/><ellipse cx="157" cy="128" rx="10.5" ry="14" fill="${ink}"/>
         <circle cx="107" cy="122" r="4.6" fill="#fff"/><circle cx="161" cy="122" r="4.6" fill="#fff"/><circle cx="99" cy="134" r="2.2" fill="#fff"/><circle cx="153" cy="134" r="2.2" fill="#fff"/>
         <path d="M90 116 L86 111 M116 116 L119 111 M144 116 L141 111 M170 116 L174 111" stroke="${ink}" stroke-width="2.5" stroke-linecap="round"/></g>
@@ -484,6 +647,7 @@ function girlSVG(o, acc = DEFAULT_ACC, vb = '0 0 260 380') {
       <g class="g-open"><path d="M114 148 Q130 178 146 148 Z" fill="#c2455e" stroke="#c2455e" stroke-width="3" stroke-linejoin="round"/><ellipse cx="130" cy="162" rx="9" ry="5" fill="#ff8fb2"/></g>
       <path class="g-oops" d="M118 160 Q130 148 142 160" stroke="#c2455e" stroke-width="4.5" stroke-linecap="round" fill="none"/>
       <path class="g-sweat" d="M182 96 Q190 110 182 116 Q174 110 182 96 Z" fill="#8fd3ff" stroke="#5aa9ff" stroke-width="2"/>
+      ${A.face ? accSVG(A.face, o) : ''}
       ${A.head ? accSVG(A.head, o) : ''}
     </g>
   </g></svg>`;
@@ -896,9 +1060,12 @@ const hardUnlocked = () => {
 };
 const isHard = () => store.data.mode === 'hard' && hardUnlocked();
 const outfitNow = () => { const o = OUTFITS[store.data.outfit]; return o && o.need <= totalStars() ? o : OUTFITS[0]; };
-const accNow = () => {   // only items she has actually earned
+/* her whole look: accessories per slot + hairstyle, hair colour, shoes — only things she has earned */
+const accNow = () => {
   const a = { ...DEFAULT_ACC, ...(store.data.acc || {}) }, t = totalStars();
-  for (const k in a) { const x = ACCS.find(i => i.id === a[k]); if (!x || x.need > t) a[k] = null; }
+  for (const sl of SLOTS) { const x = ACCS.find(i => i.id === a[sl.id] && i.slot === sl.id); if (!x || x.need > t) a[sl.id] = null; }
+  const ok = (list, id, def) => { const x = list.find(i => i.id === id); return x && (x.need || 0) <= t ? id : def; };
+  a.hair = ok(HAIRSTYLES, a.hair, 'braid'); a.hairColor = ok(HAIR_COLORS, a.hairColor, 'brown'); a.shoes = ok(SHOES, a.shoes, 'red');
   return a;
 };
 const starText = (n, max = MAX_STARS) => Array.from({ length: max }, (_, i) => `<span class="${i < n ? '' : 'off'}">★</span>`).join('');
@@ -968,23 +1135,43 @@ function renderSongs() {
       <span class="bstars">${starText(b ? b.stars : 0)}</span></button>`;
   }).join('');
 }
-const CROP = { head:'40 0 180 200', neck:'62 150 136 136', hand:'140 110 120 190' };
+const CROP = { head:'40 0 180 200', face:'62 78 136 104', neck:'62 150 136 136', hand:'140 110 120 190', shoes:'78 296 104 66', color:'40 0 180 200' };
+const WTABS = [
+  { id:'dress', name:'ドレス' }, { id:'shoes', name:'くつ' }, { id:'hair', name:'かみがた' }, { id:'color', name:'かみのいろ' },
+  { id:'head', name:'かみかざり' }, { id:'face', name:'かお' }, { id:'neck', name:'ネックレス' }, { id:'hand', name:'もちもの' },
+];
+let wardrobeTab = 'dress';
 function renderWardrobe() {
   const total = totalStars(), o = outfitNow(), a = accNow();
   const lockTxt = need => `★ ${need}こで ゲット${need > SONGS.length * MAX_STARS ? '（むずかしいモードの★も かぞえるよ）' : ''}`;
-  const card = (attrs, sel, locked, svg, name, onTxt, offTxt = 'つけてみる') => `<button class="outfit${sel ? ' sel' : ''}${locked ? ' lock' : ''}" ${attrs} ${locked ? 'aria-disabled="true"' : ''}>${svg}<span>${name}</span>${locked ? `<em class="need">${lockTxt(locked)}</em>` : `<em>${sel ? onTxt : offTxt}</em>`}</button>`;
-  $('starTotal').innerHTML = `いま ★ <b>${total}</b> こ ／ ★を あつめると あたらしい ようふくや アクセサリーが もらえるよ！`;
-  const solo = slot => (slot === 'hand' ? { head:null, neck:null } : { head:null, neck:null, hand:null });   // crop shows only this slot
-  let html = `<h3 class="wsec">ドレス</h3><div class="wgrid">` + OUTFITS.map((d, i) =>
-    card(`data-kind="dress" data-i="${i}"`, outfitNow() === d, total < d.need ? d.need : 0, girlSVG(d, a), d.name, 'きているよ', 'きてみる')).join('') + '</div>';
-  for (const sl of SLOTS) {
-    const items = ACCS.filter(x => x.slot === sl.id);
-    html += `<h3 class="wsec">${sl.name}</h3><div class="wgrid">`
-      + card(`data-kind="acc" data-slot="${sl.id}" data-id=""`, !a[sl.id], 0, girlSVG(o, { ...solo(sl.id), [sl.id]:null }, CROP[sl.id]), 'なし', 'えらんでいるよ')
-      + items.map(x => card(`data-kind="acc" data-slot="${sl.id}" data-id="${x.id}"`, a[sl.id] === x.id, total < x.need ? x.need : 0,
-        girlSVG(o, { ...solo(sl.id), [sl.id]:x.id }, CROP[sl.id]), x.name, 'つけているよ')).join('') + '</div>';
+  const card = (attrs, sel, need, svg, name, onTxt, offTxt) => {
+    const locked = need > total;
+    return `<button class="outfit${sel ? ' sel' : ''}${locked ? ' lock' : ''}" ${attrs} ${locked ? 'aria-disabled="true"' : ''}>${svg}<span>${name}</span>`
+      + (locked ? `<em class="need">${lockTxt(need)}</em>` : `<em>${sel ? onTxt : offTxt}</em>`) + '</button>';
+  };
+  const byNeed = list => list.map((x, i) => [x, i]).sort((p, q) => (p[0].need || 0) - (q[0].need || 0));
+  const plain = { head:null, face:null, neck:null, hand:null };   // crops show only the thing being chosen
+  $('starTotal').innerHTML = `いま ★ <b>${total}</b> こ<br>★を あつめると あたらしい ものが もらえるよ！`;
+  $('wPreview').innerHTML = girlSVG(o, a); $('wPreview').firstElementChild.classList.add('dance', 's-happy');
+  $('wTabs').innerHTML = WTABS.map(t => `<button class="wtab${t.id === wardrobeTab ? ' sel' : ''}" data-tab="${t.id}" type="button">${t.name}</button>`).join('');
+  let html = '';
+  switch (wardrobeTab) {
+    case 'dress':
+      html = byNeed(OUTFITS).map(([d, i]) => card(`data-kind="dress" data-i="${i}"`, o === d, d.need, girlSVG(d, a), d.name, 'きているよ', 'きてみる')).join(''); break;
+    case 'shoes':
+      html = byNeed(SHOES).map(([x]) => card(`data-kind="style" data-key="shoes" data-id="${x.id}"`, a.shoes === x.id, x.need, girlSVG(o, { ...a, ...plain, shoes:x.id }, CROP.shoes), x.name, 'はいているよ', 'はいてみる')).join(''); break;
+    case 'hair':
+      html = HAIRSTYLES.map(x => card(`data-kind="style" data-key="hair" data-id="${x.id}"`, a.hair === x.id, 0, girlSVG(o, { ...a, ...plain, hair:x.id }), x.name, 'このかみがた', 'してみる')).join(''); break;
+    case 'color':
+      html = byNeed(HAIR_COLORS).map(([x]) => card(`data-kind="style" data-key="hairColor" data-id="${x.id}"`, a.hairColor === x.id, x.need, girlSVG(o, { ...a, ...plain, hairColor:x.id }, CROP.color), x.name, 'このいろ', 'そめてみる')).join(''); break;
+    default: {
+      const sl = wardrobeTab;
+      html = card(`data-kind="acc" data-slot="${sl}" data-id=""`, !a[sl], 0, girlSVG(o, { ...a, ...plain }, CROP[sl]), 'なし', 'えらんでいるよ', 'はずす')
+        + byNeed(ACCS.filter(x => x.slot === sl)).map(([x]) => card(`data-kind="acc" data-slot="${sl}" data-id="${x.id}"`, a[sl] === x.id, x.need,
+          girlSVG(o, { ...a, ...plain, [sl]:x.id }, CROP[sl]), x.name, 'つけているよ', 'つけてみる')).join('');
+    }
   }
-  $('wardrobeGrid').innerHTML = html;
+  $('wardrobeGrid').innerHTML = `<div class="wgrid">${html}</div>`;
 }
 
 /* =====================================================
@@ -1231,7 +1418,8 @@ function finish() {
   store.data.best[key] = { score:Math.max(prev.score, G.score), stars:Math.max(prev.stars, stars) };
   store.save();
   const after = totalStars(), newlyOpen = !wasOpen && hardUnlocked();
-  const unlocked = [...OUTFITS, ...ACCS].filter(x => x.need > before && x.need <= after);
+  const unlocked = [...OUTFITS, ...ACCS, ...HAIR_COLORS.map(x => ({ ...x, name:'かみのいろ「' + x.name + '」' })), ...SHOES]
+    .filter(x => x.need > before && x.need <= after).sort((p, q) => p.need - q.need);
   setTimeout(() => Sound.fanfare(), 250);
 
   $('resultStars').innerHTML = [0, 1, 2, 3, 4].map(i => `<i class="${i < stars ? 'on' : ''}" style="animation-delay:${.35 + i * .22}s">★</i>`).join('');
@@ -1265,8 +1453,13 @@ $('btnWardrobeBack').onclick = () => { if (wardrobeFrom === 'select') { renderSo
 $('wardrobeGrid').addEventListener('click', e => {
   const b = e.target.closest('.outfit'); if (!b || b.classList.contains('lock')) return;
   if (b.dataset.kind === 'dress') store.data.outfit = +b.dataset.i;
+  else if (b.dataset.kind === 'style') store.data.acc = { ...accNow(), [b.dataset.key]:b.dataset.id };
   else store.data.acc = { ...accNow(), [b.dataset.slot]:b.dataset.id || null };
   store.save(); const sc = $('wardrobe').scrollTop; renderGirls(); renderWardrobe(); $('wardrobe').scrollTop = sc;
+});
+$('wTabs').addEventListener('click', e => {
+  const b = e.target.closest('.wtab'); if (!b) return;
+  wardrobeTab = b.dataset.tab; renderWardrobe();
 });
 $('modeRow').addEventListener('click', e => {
   const b = e.target.closest('.mode'); if (!b) return;
@@ -1310,9 +1503,11 @@ function makeCode() {
   const bits = [], put = (v, n) => { for (let i = n - 1; i >= 0; i--) bits.push((v >> i) & 1); };
   const d = store.data, st = k => Math.min(5, (d.best[k] || {}).stars || 0), a = accNow();
   const idx = slot => a[slot] ? slotItems(slot).findIndex(x => x.id === a[slot]) + 1 : 0;
-  put(1, 4); put(SAVE_IDS.length, 5);
+  const at = (list, id) => Math.max(0, list.findIndex(x => x.id === id));
+  put(2, 4); put(SAVE_IDS.length, 5);
   SAVE_IDS.forEach(id => { put(st(id), 3); put(st(id + '@hard'), 3); });
-  put(OUTFITS.indexOf(outfitNow()), 3); put(idx('head'), 3); put(idx('neck'), 2); put(idx('hand'), 2);
+  put(OUTFITS.indexOf(outfitNow()), 4); put(idx('head'), 4); put(idx('neck'), 3); put(idx('hand'), 3); put(idx('face'), 2);
+  put(at(HAIRSTYLES, a.hair), 3); put(at(HAIR_COLORS, a.hairColor), 3); put(at(SHOES, a.shoes), 3);
   put(hardUnlocked() ? 1 : 0, 1); put(d.mode === 'hard' ? 1 : 0, 1); put(bgmOn() ? 1 : 0, 1);
   while (bits.length % 5) bits.push(0);
   const vals = [];
@@ -1330,11 +1525,14 @@ function readCode(text) {
   const bits = [];
   vals.forEach(v => { for (let i = 4; i >= 0; i--) bits.push((v >> i) & 1); });
   let p = 0; const get = n => { let v = 0; for (let i = 0; i < n; i++) v = v * 2 + (bits[p++] || 0); return v; };
-  if (get(4) !== 1) return null;
+  const ver = get(4); if (ver !== 1 && ver !== 2) return null;
   const n = get(5); if (n > SAVE_IDS.length) return null;
   const best = {};
   for (let i = 0; i < n; i++) { best[SAVE_IDS[i]] = get(3); best[SAVE_IDS[i] + '@hard'] = get(3); }
-  const r = { best, outfit:get(3), head:get(3), neck:get(2), hand:get(2), hardOpen:get(1), hard:get(1), bgm:get(1) };
+  const r = ver === 1
+    ? { best, outfit:get(3), head:get(3), neck:get(2), hand:get(2), face:0, hair:0, hairColor:0, shoes:0 }
+    : { best, outfit:get(4), head:get(4), neck:get(3), hand:get(3), face:get(2), hair:get(3), hairColor:get(3), shoes:get(3) };
+  Object.assign(r, { hardOpen:get(1), hard:get(1), bgm:get(1) });
   return p <= bits.length ? r : null;
 }
 function applyCode(r) {
@@ -1346,7 +1544,9 @@ function applyCode(r) {
   }
   if (r.outfit < OUTFITS.length) d.outfit = r.outfit;
   const pick = (slot, i) => (i ? (slotItems(slot)[i - 1] || {}).id || null : null);
-  d.acc = { head:pick('head', r.head), neck:pick('neck', r.neck), hand:pick('hand', r.hand) };
+  const idOf = (list, i) => (list[i] || list[0]).id;
+  d.acc = { head:pick('head', r.head), face:pick('face', r.face), neck:pick('neck', r.neck), hand:pick('hand', r.hand),
+    hair:idOf(HAIRSTYLES, r.hair), hairColor:idOf(HAIR_COLORS, r.hairColor), shoes:idOf(SHOES, r.shoes) };
   if (r.hardOpen) d.hardOpen = true;
   d.mode = r.hard ? 'hard' : 'normal'; d.bgm = !!r.bgm;
   store.save();
