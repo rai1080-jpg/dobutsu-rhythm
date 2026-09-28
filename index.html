@@ -215,6 +215,10 @@ h2.ttl{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(26px,
 .wtab{font-family:var(--display);font-size:14px;border:0;border-radius:999px;padding:.45em .95em;background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(91,51,72,.15);cursor:pointer}
 .wtab.sel{background:var(--pink);color:#fff;box-shadow:0 3px 0 var(--pink-d)}
 .wtab:focus-visible{outline:4px solid var(--sky);outline-offset:2px}
+.catRow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:min(560px,100%)}
+.song.lock{cursor:default;opacity:.75;background:#f7f2f5}
+.song.lock .face svg{filter:grayscale(1)}
+.song.lock small span:last-child{color:var(--ink-soft)}
 .wsec{margin:8px 0 0;font-family:var(--display);font-weight:400;font-size:clamp(17px,3.2vmin,22px);color:var(--pink-d);text-align:left;-webkit-text-stroke:5px #fff;paint-order:stroke fill}
 .outfit em.need{font-size:.85em;line-height:1.3}
 #modeRow .mode{font-family:var(--display);font-size:clamp(14px,2.8vmin,18px);border:0;border-radius:999px;padding:.5em 1.1em;cursor:pointer;background:#fff;color:var(--ink);box-shadow:0 4px 0 rgba(91,51,72,.18)}
@@ -320,6 +324,7 @@ h2.ttl{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(26px,
     <h2 class="ttl">きょくを えらんでね</h2>
     <div id="modeRow" class="row"></div>
     <div id="modeHint" class="howto"></div>
+    <div id="catRow" class="catRow"></div>
     <div id="songList"></div>
     <div class="row"><button class="btn ghost small" id="btnWardrobe2">おきがえ</button><button class="btn ghost small" id="btnBackTitle">もどる</button></div>
   </section>
@@ -870,7 +875,113 @@ const SONGS = [
       'C5:1 D5:.5 C5:.5 B4:.5 A4:.5  B4:1 C5:.5 B4:.5 A4:.5 G4:.5  A4:1 B4:.5 A4:.5 G4:.5 F#4:.5  G4:3',
     ].join('  '),
   },
+
+  /* ---- ten more (traditional / public-domain) ---- */
+  {
+    id:'hotcross', name:'ホットクロスバンズ', level:1, levelName:'かんたん', bpm:100, approach:1.8, animal:1, sky:['#ffe7cf', '#fff6e0'],
+    chords:['C', 'C', 'C G', 'C', 'C', 'C', 'C G', 'C', 'C', 'C', 'C G', 'C', 'C', 'C', 'C G', 'C'],
+    style:{ k:[1,0,0,0,1,0,0,0], s:[0,0,1,0,0,0,1,0], h:[0,1,0,1,0,1,0,1], b:[0,null,null,null,7,null,null,null], c:[0,0,1,0,0,0,1,0] },
+    melody:twice(twice('E4:1 D4:1 C4:2  E4:1 D4:1 C4:2  C4:.5 C4:.5 C4:.5 C4:.5 D4:.5 D4:.5 D4:.5 D4:.5  E4:1 D4:1 C4:2')),
+  },
+  {
+    id:'rowboat', name:'ロウ・ロウ・ボート', level:1, levelName:'かんたん', bpm:96, bpb:3, approach:1.8, animal:2, sky:['#bfe9ff', '#e6fff6'],
+    chords:twice2(['C', 'C', 'C', 'C', 'C', 'C', 'G', 'C']),
+    style:{ k:[1,0,0,1,0,0], s:[0,0,0,0,0,0], h:[0,1,1,0,1,1], b:[0,null,null,7,null,null], c:[0,0,1,0,0,1] },
+    melody:twice('C4:1.5 C4:1.5  C4:1 D4:.5 E4:1.5  E4:1 D4:.5 E4:1 F4:.5  G4:3  C5:.5 C5:.5 C5:.5 G4:.5 G4:.5 G4:.5  E4:.5 E4:.5 E4:.5 C4:.5 C4:.5 C4:.5  G4:1 F4:.5 E4:1 D4:.5  C4:3'),
+  },
+  {
+    id:'ieji', name:'いえじ（しんせかい）', level:1, levelName:'かんたん', bpm:76, approach:1.9, animal:0, sky:['#ffd9b8', '#ffe9f4'],
+    chords:twice2(['C', 'C', 'G', 'G', 'C', 'C', 'G', 'C']),
+    style:{ k:[1,0,0,0,0,0,0,0], s:[0,0,0,0,1,0,0,0], h:[0,0,1,0,0,0,1,0], b:[0,null,null,null,7,null,null,null], c:[0,0,1,0,0,0,1,0] },
+    melody:twice('E4:1 G4:1 G4:2  E4:1 D4:1 C4:2  D4:1 E4:1 G4:1 E4:1  D4:4  E4:1 G4:1 G4:2  E4:1 D4:1 C4:2  D4:1 E4:1 D4:1 C4:1  C4:4'),
+  },
+  {
+    id:'silent', name:'きよしこのよる', level:1, levelName:'かんたん', bpm:150, bpb:3, approach:1.9, animal:3, sky:['#c9d3ff', '#f1e6ff'],
+    chords:['C', 'C', 'C', 'C', 'G', 'G', 'C', 'C', 'F', 'F', 'C', 'C', 'F', 'F', 'C', 'C', 'G', 'G', 'C', 'C', 'C', 'G', 'C'],
+    style:{ k:[1,0,0,0,0,0], s:[0,0,0,0,0,0], h:[0,0,1,0,1,0], b:[0,null,null,null,null,null], c:[0,0,1,0,1,0] },
+    melody:[
+      'G4:1.5 A4:.5 G4:1  E4:3  G4:1.5 A4:.5 G4:1  E4:3  D5:2 D5:1  B4:3  C5:2 C5:1  G4:3',
+      'A4:2 A4:1  C5:1.5 B4:.5 A4:1  G4:1.5 A4:.5 G4:1  E4:3  A4:2 A4:1  C5:1.5 B4:.5 A4:1  G4:1.5 A4:.5 G4:1  E4:3',
+      'D5:2 D5:1  F5:1.5 D5:.5 B4:1  C5:3  E5:3  C5:1 G4:1 E4:1  G4:1.5 F4:.5 D4:1  C4:3',
+    ].join('  '),
+  },
+  {
+    id:'hotaru', name:'ほたるのひかり', level:2, levelName:'ふつう', bpm:92, approach:1.7, animal:3, sky:['#d8f0ff', '#fff0f6'],
+    chords:['C', 'C', 'G', 'C', 'F', 'C', 'G', 'F G', 'C', 'C', 'G', 'C', 'F', 'C', 'G', 'F G', 'C'],
+    style:{ k:[1,0,0,0,1,0,0,0], s:[0,0,1,0,0,0,1,0], h:[1,0,1,0,1,0,1,0], b:[0,null,null,null,7,null,null,null], c:[0,1,0,1,0,1,0,1] },
+    melody:[
+      'r:3 G3:1  C4:1.5 C4:.5 C4:1 E4:1  D4:1.5 C4:.5 D4:1 E4:1  C4:1.5 C4:.5 E4:1 G4:1  A4:3 A4:1',
+      'G4:1.5 E4:.5 E4:1 C4:1  D4:1.5 C4:.5 D4:1 E4:1  C4:1.5 A3:.5 A3:1 G3:1  C4:3 A4:1',
+      'G4:1.5 E4:.5 E4:1 C4:1  D4:1.5 C4:.5 D4:1 A4:1  G4:1.5 E4:.5 E4:1 G4:1  A4:3 C5:1',
+      'G4:1.5 E4:.5 E4:1 C4:1  D4:1.5 C4:.5 D4:1 E4:1  C4:1.5 A3:.5 A3:1 G3:1  C4:4',
+    ].join('  '),
+  },
+  {
+    id:'clementine', name:'いとしのクレメンタイン', level:2, levelName:'ふつう', bpm:126, bpb:3, approach:1.6, animal:1, sky:['#d6f5e3', '#fff4d9'],
+    chords:twice2(['C', 'C', 'C', 'G', 'G', 'G', 'C', 'G', 'C']),
+    style:{ k:[1,0,0,0,0,0], s:[0,0,1,0,1,0], h:[0,1,0,1,0,1], b:[0,null,null,null,null,null], c:[0,0,1,0,1,0] },
+    melody:twice('r:2 C4:.5 C4:.5  C4:1.5 G3:.5 E4:.5 E4:.5  E4:1.5 C4:.5 C4:.5 E4:.5  G4:1.5 G4:.5 F4:.5 E4:.5  D4:2 D4:.5 E4:.5  F4:1.5 F4:.5 E4:.5 D4:.5  E4:1.5 C4:.5 C4:.5 E4:.5  D4:1.5 G3:.5 B3:.5 D4:.5  C4:3'),
+  },
+  {
+    id:'wewish', name:'ウィ・ウィッシュ・ユー', level:2, levelName:'ふつう', bpm:132, bpb:3, approach:1.6, animal:0, sky:['#d2f0ff', '#ffe6e6'],
+    chords:['C', 'C', 'F', 'D', 'G', 'E', 'Am', 'F G', 'C', 'C', 'G', 'C', 'G', 'C', 'C', 'F G', 'C'],
+    style:{ k:[1,0,0,0,0,0], s:[0,0,1,0,1,0], h:[1,1,1,1,1,1], b:[0,null,7,null,12,null], c:[0,0,1,0,1,0] },
+    melody:[
+      'r:2 G3:1  C4:1 C4:.5 D4:.5 C4:.5 B3:.5  A3:1 A3:1 A3:1  D4:1 D4:.5 E4:.5 D4:.5 C4:.5  B3:1 G3:1 G3:1',
+      'E4:1 E4:.5 F4:.5 E4:.5 D4:.5  C4:1 A3:1 G3:.5 G3:.5  A3:1 D4:1 B3:1  C4:2 G3:1',
+      'C4:1 C4:1 C4:1  B3:2 B3:1  C4:1 B3:1 A3:1  G3:2 D4:1',
+      'E4:1 D4:.5 D4:.5 C4:.5 C4:.5  G4:1 G3:1 G3:.5 G3:.5  A3:1 D4:1 B3:1  C4:3',
+    ].join('  '),
+  },
+  {
+    id:'sakura', name:'さくら さくら', level:2, levelName:'ふつう', bpm:84, approach:1.7, animal:1, sky:['#ffe0ec', '#fff5f9'],
+    chords:['Am', 'Am', 'Am', 'Dm', 'Am', 'E', 'Am', 'Dm', 'Am', 'E', 'Am', 'Am', 'Dm', 'E'],
+    style:{ k:[1,0,0,0,0,0,0,0], s:[0,0,0,0,1,0,0,0], h:[0,0,1,0,0,0,1,0], b:[0,null,null,null,7,null,null,null], c:[0,0,1,0,0,0,1,0] },
+    melody:[
+      'A4:1 A4:1 B4:2  A4:1 A4:1 B4:2  A4:1 B4:1 C5:1 B4:1  A4:1 B4:.5 A4:.5 F4:2',
+      'E4:1 C4:1 E4:1 F4:1  E4:1 E4:.5 C4:.5 B3:2  A4:1 B4:1 C5:1 B4:1  A4:1 B4:.5 A4:.5 F4:2',
+      'E4:1 C4:1 E4:1 F4:1  E4:1 E4:.5 C4:.5 B3:2  A4:1 A4:1 B4:2  A4:1 A4:1 B4:2',
+      'E4:1 F4:1 B4:.5 A4:.5 F4:1  E4:4',
+    ].join('  '),
+  },
+  {
+    id:'greensleeves', name:'グリーンスリーブス', level:3, levelName:'むずかしい', bpm:168, bpb:3, approach:1.5, animal:2, sky:['#cdeccf', '#eef6ff'],
+    chords:['Am', 'Am', 'G', 'G', 'G', 'Am', 'E', 'E', 'Am', 'Am', 'G', 'G', 'G', 'Am', 'E', 'Am',
+            'C', 'C', 'G', 'G', 'Am', 'E', 'E', 'E', 'C', 'C', 'G', 'G', 'Am', 'E', 'Am'],
+    style:{ k:[1,0,0,0,0,0], s:[0,0,0,0,0,0], h:[1,0,1,0,1,0], b:[0,null,null,null,null,null], c:[0,0,1,0,1,0] },
+    melody:[
+      'r:2 A4:1  C5:2 D5:1  E5:1.5 F5:.5 E5:1  D5:2 B4:1  G4:1.5 A4:.5 B4:1  C5:2 A4:1  A4:1.5 G#4:.5 A4:1  B4:2 G#4:1  E4:2 A4:1',
+      'C5:2 D5:1  E5:1.5 F5:.5 E5:1  D5:2 B4:1  G4:1.5 A4:.5 B4:1  C5:1.5 B4:.5 A4:1  G#4:1.5 F#4:.5 G#4:1  A4:3',
+      'G5:3  G5:1.5 F#5:.5 E5:1  D5:2 B4:1  G4:1.5 A4:.5 B4:1  C5:2 A4:1  A4:1.5 G#4:.5 A4:1  B4:2 G#4:1  E4:3',
+      'G5:3  G5:1.5 F#5:.5 E5:1  D5:2 B4:1  G4:1.5 A4:.5 B4:1  C5:1.5 B4:.5 A4:1  G#4:1.5 F#4:.5 G#4:1  A4:3',
+    ].join('  '),
+  },
+  {
+    id:'susanna', name:'おお スザンナ', level:3, levelName:'むずかしい', bpm:138, approach:1.5, animal:0, sky:['#ffe9c7', '#e3f6ff'],
+    chords:twice2(['C', 'C', 'C G', 'C', 'G C', 'F', 'C', 'G', 'C', 'G C']),
+    style:{ k:[1,0,1,0,1,0,1,0], s:[0,0,1,0,0,0,1,0], h:[1,1,1,1,1,1,1,1], b:[0,null,7,null,0,null,7,null], c:[0,1,0,1,0,1,0,1] },
+    melody:twice([
+      'r:3 C4:.5 D4:.5  E4:.5 G4:.5 G4:.5 A4:.5 G4:.5 E4:.5 C4:.5 D4:.5  E4:.5 E4:.5 D4:.5 C4:.5 D4:1 C4:.5 D4:.5',
+      'E4:.5 G4:.5 G4:.5 A4:.5 G4:.5 E4:.5 C4:.5 D4:.5  E4:.5 E4:.5 D4:.5 D4:.5 C4:2',
+      'F4:2 A4:2  A4:1 G4:1 G4:1 E4:1  C4:1 D4:2 C4:.5 D4:.5',
+      'E4:.5 G4:.5 G4:.5 A4:.5 G4:.5 E4:.5 C4:.5 D4:.5  E4:.5 E4:.5 D4:.5 D4:.5 C4:2',
+    ].join('  ')),
+  },
 ];
+
+/* categories shown as chips on the song screen */
+const SONG_CATS = [
+  { id:'all', name:'ぜんぶ' }, { id:'kids', name:'どうよう' }, { id:'world', name:'せかいの うた' },
+  { id:'classic', name:'クラシック' }, { id:'event', name:'イベント' }, { id:'original', name:'オリジナル' },
+];
+const CAT_OF = {
+  kira:'kids', mary:'kids', london:'kids', kaeru:'kids', farm:'kids', gcp:'kids', alps:'kids', hotcross:'kids', rowboat:'kids',
+  clementine:'world', sakura:'world', greensleeves:'world', susanna:'world',
+  ode:'classic', elise:'classic', minuet:'classic', ieji:'classic',
+  jingle:'event', birthday:'event', silent:'event', hotaru:'event', wewish:'event',
+  march:'original', rainbow:'original',
+};
+SONGS.forEach(s => { s.cat = CAT_OF[s.id] || 'kids'; });
 SONGS.sort((a, b) => a.level - b.level);   // easy → hard (stable)
 
 /* menu BGM: an original, gentle music-box loop (8 bars) */
@@ -888,7 +999,10 @@ const MENU_BGM = (() => {
 for (const s of SONGS) {
   const mel = parseMelody(s.melody);
   const uniq = [...new Set(mel.notes.map(n => n.midi))].sort((a, b) => a - b);
-  s.notes = mel.notes.map(n => ({ ...n, lane: Math.min(3, Math.floor(uniq.indexOf(n.midi) * 4 / uniq.length)) }));
+  /* few distinct pitches (≤4): spread them over the outer lanes too, so every lane gets used */
+  const laneOf = midi => { const r = uniq.indexOf(midi);
+    return uniq.length <= 4 && uniq.length > 1 ? Math.round(r * 3 / (uniq.length - 1)) : Math.min(3, Math.floor(r * 4 / uniq.length)); };
+  s.notes = mel.notes.map(n => ({ ...n, lane: laneOf(n.midi) }));
   /* むずかしいモード: long notes get an extra tap halfway through, in the mirrored lane */
   s.hardNotes = [];
   for (const n of s.notes) {
@@ -1117,6 +1231,18 @@ function setSky(sky) {
   if (sky) { app.style.setProperty('--sky1', sky[0]); app.style.setProperty('--sky2', sky[1]); }
   else { app.style.removeProperty('--sky1'); app.style.removeProperty('--sky2'); }
 }
+/* song tiers: ふつう opens when every かんたん song has ★4+, むずかしい when every ふつう song has ★4+.
+   Once open, a tier stays open (new songs never re-lock it); songs already played stay playable. */
+const TIER_STARS = 4, LEVEL_NAME = ['', 'かんたん', 'ふつう', 'むずかしい'];
+const normalStars = s => ((store.data.best[s.id] || {}).stars || 0);
+const tierProgress = lv => { const list = SONGS.filter(s => s.level === lv - 1); return [list.filter(s => normalStars(s) >= TIER_STARS).length, list.length]; };
+function tierOpen(lv) {
+  if (lv <= 1) return true;
+  const t = store.data.tiers || (store.data.tiers = {});
+  if (!t[lv] && tierOpen(lv - 1)) { const [a, b] = tierProgress(lv); if (a >= b) { t[lv] = true; store.save(); } }
+  return !!t[lv];
+}
+const songOpen = s => tierOpen(s.level) || !!store.data.best[s.id];
 function renderSongs() {
   const hard = isHard(), open = hardUnlocked();
   $('app').classList.toggle('hard', hard);
@@ -1126,9 +1252,19 @@ function renderSongs() {
   $('modeHint').innerHTML = open
     ? (hard ? 'どうぶつが はやく おちてきて、ノーツも ふえるよ！ はんていも きびしめ。' : 'むずかしいモードが あそべるよ！')
     : `${HARD_NEED}きょくで ★${MAX_STARS} を とると むずかしいモードが あそべるよ（いま <b>${fiveCount()}</b> / ${HARD_NEED} きょく）`;
+  const cat = store.data.cat || 'all';
+  $('catRow').innerHTML = SONG_CATS.map(c => `<button class="wtab${c.id === cat ? ' sel' : ''}" data-cat="${c.id}" type="button">${c.name}</button>`).join('');
   $('songList').innerHTML = SONGS.map((s, i) => {
+    if (cat !== 'all' && s.cat !== cat) return '';
     const b = store.data.best[bestKey(s, hard)];
     const cls = ['', 'e', 'n', 'h'][s.level];
+    if (!songOpen(s)) {
+      const [a, n] = tierProgress(s.level);
+      return `<button class="song lock" data-i="${i}" aria-disabled="true" style="--c:#d9ccd4">
+      <span class="face">${animalSVG(ANIMALS[s.animal].kind)}</span>
+      <span><b>${s.name}</b><small><span class="pill ${cls}">${s.levelName}</span><span>🔒 ${LEVEL_NAME[s.level - 1]}の きょくを ぜんぶ ★${TIER_STARS}いじょうで あそべるよ（いま ${a} / ${n}）</span></small></span>
+      <span class="bstars"></span></button>`;
+    }
     return `<button class="song" data-i="${i}" style="--c:${LANE_COLORS[s.animal]}">
       <span class="face">${animalSVG(ANIMALS[s.animal].kind)}</span>
       <span><b>${s.name}</b><small><span class="pill ${cls}">${s.levelName}</span><span>${s.bpm} BPM</span>${b && b.score ? `<span>ハイスコア ${b.score.toLocaleString()}</span>` : ''}</small></span>
@@ -1177,7 +1313,7 @@ function renderWardrobe() {
 /* =====================================================
    Game
    ===================================================== */
-const WIN_NORMAL = { perfect:.11, good:.18, ok:.26 }, WIN_HARD = { perfect:.075, good:.13, ok:.2 };
+const WIN_NORMAL = { perfect:.08, good:.13, ok:.18 }, WIN_HARD = { perfect:.06, good:.10, ok:.14 };
 let WIN = WIN_NORMAL;
 const cv = $('cv'), ctx = cv.getContext('2d');
 let W = 0, H = 0, dpr = 1, noteR = 30, hitY = 0;
@@ -1238,7 +1374,10 @@ const GRADE = {
 function hitNote(n, dt) {
   const gr = grade(dt), info = GRADE[gr];
   n.judged = n.hit = true;
-  G.cnt[gr]++; G.combo++; G.missRun = 0; G.maxCombo = Math.max(G.maxCombo, G.combo);
+  G.cnt[gr]++; G.missRun = 0;
+  if (gr === 'o') { G.combo = 0; $('app').classList.remove('fever'); }   // おしい breaks the combo
+  else G.combo++;
+  G.maxCombo = Math.max(G.maxCombo, G.combo);
   G.perfRun = gr === 'p' ? G.perfRun + 1 : 0;
   G.score += info.pts + Math.min(G.combo, 20) * 3;
   $('score').textContent = G.score.toLocaleString();
@@ -1275,7 +1414,10 @@ function press(l) {
   while (G.ptr[l] < q.length && q[G.ptr[l]].judged) G.ptr[l]++;
   const n = q[G.ptr[l]];
   if (n && Math.abs(t - n.t) <= WIN.ok) hitNote(n, t - n.t);
-  else { Sound.blip(); G.flash[l] = Math.max(G.flash[l], .3); }
+  else {   // tapping where no animal is breaks the combo (no free combos from mashing)
+    Sound.blip(); G.flash[l] = Math.max(G.flash[l], .3);
+    if (G.combo) { G.combo = 0; G.perfRun = 0; updateCombo(false); $('app').classList.remove('fever'); }
+  }
 }
 function release(l) { laneEls[l].classList.remove('down'); }
 
@@ -1417,8 +1559,10 @@ function finish() {
   const before = totalStars(), prev = store.data.best[key] || { score:0, stars:0 };
   store.data.best[key] = { score:Math.max(prev.score, G.score), stars:Math.max(prev.stars, stars) };
   store.save();
+  const tiersBefore = [2, 3].filter(lv => (store.data.tiers || {})[lv]);
   const after = totalStars(), newlyOpen = !wasOpen && hardUnlocked();
-  const unlocked = [...OUTFITS, ...ACCS, ...HAIR_COLORS.map(x => ({ ...x, name:'かみのいろ「' + x.name + '」' })), ...SHOES]
+  const newTiers = [2, 3].filter(lv => tierOpen(lv) && !tiersBefore.includes(lv));
+  const unlocked = [...OUTFITS, ...ACCS, ...HAIR_COLORS.map(x => ({ ...x, name:x.name + 'の かみ' })), ...SHOES]
     .filter(x => x.need > before && x.need <= after).sort((p, q) => p.need - q.need);
   setTimeout(() => Sound.fanfare(), 250);
 
@@ -1431,8 +1575,10 @@ function finish() {
     .map(([k, v]) => `<div>${k}<b>${v}</b></div>`).join('');
   const msg = ['', 'たのしかったね！ もういちど やってみよう！', 'いいかんじ！ つぎは ★3 を めざそう！', 'じょうず！ リズム ばっちりだね！',
     'すごい すごい！ あと すこしで ★5 だよ！', 'さいこう！！ かんぺきな えんそう！'][stars];
-  let extra = unlocked.map(x => `\nあたらしく「${x.name}」が もらえたよ！`).join('');
-  if (newlyOpen) extra += '\n★ むずかしいモードが あそべるように なったよ！ ★';
+  let extra = '';
+  if (unlocked.length) extra += `\n🎁「${unlocked[0].name}」${unlocked.length > 1 ? `など ${unlocked.length}こ` : ''} ゲット！`;
+  newTiers.forEach(lv => { extra += `\n🔓 ${LEVEL_NAME[lv]}の きょくが あそべるよ！`; });
+  if (newlyOpen) extra += '\n🔓 むずかしいモードが あそべるよ！';
   $('resultMsg').textContent = (G.hard ? '【むずかしいモード】' : '') + msg + extra;
   $('resultMsg').style.whiteSpace = 'pre-line';
   $('resultGirl').innerHTML = girlSVG(outfitNow(), accNow()); $('resultGirl').firstElementChild.classList.add('dance', 's-happy');
@@ -1466,7 +1612,11 @@ $('modeRow').addEventListener('click', e => {
   if (b.classList.contains('lock')) { retrigger($('modeHint'), 'pop'); return; }
   store.data.mode = b.dataset.mode; store.save(); renderSongs();
 });
-$('songList').addEventListener('click', e => { const b = e.target.closest('.song'); if (b) startGame(SONGS[+b.dataset.i]); });
+$('songList').addEventListener('click', e => { const b = e.target.closest('.song'); if (b && !b.classList.contains('lock')) startGame(SONGS[+b.dataset.i]); });
+$('catRow').addEventListener('click', e => {
+  const b = e.target.closest('.wtab'); if (!b) return;
+  store.data.cat = b.dataset.cat; store.save(); renderSongs(); $('select').scrollTop = 0;
+});
 $('pauseBtn').onclick = pauseGame;
 $('btnResume').onclick = resumeGame;
 $('btnQuit').onclick = quitGame;
@@ -1495,7 +1645,8 @@ document.addEventListener('dblclick', e => e.preventDefault());
    Save code (あいことば): carries ★ and clothes to a new install, no server needed
    ===================================================== */
 /* NEVER reorder: new songs are appended at the end so old codes keep working */
-const SAVE_IDS = ['kira', 'mary', 'london', 'march', 'jingle', 'ode', 'rainbow', 'elise', 'kaeru', 'farm', 'gcp', 'alps', 'birthday', 'minuet'];
+const SAVE_IDS = ['kira', 'mary', 'london', 'march', 'jingle', 'ode', 'rainbow', 'elise', 'kaeru', 'farm', 'gcp', 'alps', 'birthday', 'minuet',
+  'hotcross', 'rowboat', 'ieji', 'silent', 'hotaru', 'clementine', 'wewish', 'sakura', 'greensleeves', 'susanna'];
 const KANA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみ';   // 32 letters = 5 bits each
 const slotItems = slot => ACCS.filter(x => x.slot === slot);
 const checksum = vals => vals.reduce((sum, v, i) => (sum + v * (i + 1)) % 32, 0);
@@ -1504,8 +1655,11 @@ function makeCode() {
   const d = store.data, st = k => Math.min(5, (d.best[k] || {}).stars || 0), a = accNow();
   const idx = slot => a[slot] ? slotItems(slot).findIndex(x => x.id === a[slot]) + 1 : 0;
   const at = (list, id) => Math.max(0, list.findIndex(x => x.id === id));
-  put(2, 4); put(SAVE_IDS.length, 5);
-  SAVE_IDS.forEach(id => { put(st(id), 3); put(st(id + '@hard'), 3); });
+  /* v3: ★ for ノーマル first; むずかしいモードの★ only when there are any (keeps most codes short) */
+  const hasHard = SAVE_IDS.some(id => st(id + '@hard') > 0);
+  put(3, 4); put(SAVE_IDS.length, 5); put(hasHard ? 1 : 0, 1);
+  SAVE_IDS.forEach(id => put(st(id), 3));
+  if (hasHard) SAVE_IDS.forEach(id => put(st(id + '@hard'), 3));
   put(OUTFITS.indexOf(outfitNow()), 4); put(idx('head'), 4); put(idx('neck'), 3); put(idx('hand'), 3); put(idx('face'), 2);
   put(at(HAIRSTYLES, a.hair), 3); put(at(HAIR_COLORS, a.hairColor), 3); put(at(SHOES, a.shoes), 3);
   put(hardUnlocked() ? 1 : 0, 1); put(d.mode === 'hard' ? 1 : 0, 1); put(bgmOn() ? 1 : 0, 1);
@@ -1525,10 +1679,14 @@ function readCode(text) {
   const bits = [];
   vals.forEach(v => { for (let i = 4; i >= 0; i--) bits.push((v >> i) & 1); });
   let p = 0; const get = n => { let v = 0; for (let i = 0; i < n; i++) v = v * 2 + (bits[p++] || 0); return v; };
-  const ver = get(4); if (ver !== 1 && ver !== 2) return null;
+  const ver = get(4); if (ver < 1 || ver > 3) return null;
   const n = get(5); if (n > SAVE_IDS.length) return null;
   const best = {};
-  for (let i = 0; i < n; i++) { best[SAVE_IDS[i]] = get(3); best[SAVE_IDS[i] + '@hard'] = get(3); }
+  if (ver === 3) {
+    const hasHard = get(1);
+    for (let i = 0; i < n; i++) best[SAVE_IDS[i]] = get(3);
+    if (hasHard) for (let i = 0; i < n; i++) best[SAVE_IDS[i] + '@hard'] = get(3);
+  } else for (let i = 0; i < n; i++) { best[SAVE_IDS[i]] = get(3); best[SAVE_IDS[i] + '@hard'] = get(3); }
   const r = ver === 1
     ? { best, outfit:get(3), head:get(3), neck:get(2), hand:get(2), face:0, hair:0, hairColor:0, shoes:0 }
     : { best, outfit:get(4), head:get(4), neck:get(3), hand:get(3), face:get(2), hair:get(3), hairColor:get(3), shoes:get(3) };
